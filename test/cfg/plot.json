@@ -1,0 +1,14 @@
+{
+	"on_the_same_plot": {
+		"sweep_file": ["param.json"],
+		"num_plot_runs": [1],
+		"num_plot_steps": [10000],
+		"print_label": ["learning_rate"],
+		"print_label_type": [0],
+		"optimizer_name": ["Adam", "Adam2", "Adam3"]
+	},
+	
+    "on_different_plots": {
+	    "env": ["CartPole-v0", "MountainCar-v0"]
+    }
+}
