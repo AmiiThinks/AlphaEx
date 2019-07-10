@@ -3,7 +3,6 @@ from sweeper.plot_sweeper import PlotSweeper
 from sweeper.plotter import Plotter
 import os
 import logging
-from cfg.param_config import ParamConfig
 from cfg.plot_config import PlotConfig
 import numpy as np
 
@@ -12,16 +11,16 @@ def test_sweeper():
 	cfg_dir = 'test/cfg'
 	log_dir = 'test/log'
 	sweep_file_name = 'param.json'
-	sweeper = ParamSweeper(os.path.join(cfg_dir, sweep_file_name), ParamConfig)
+	sweeper = ParamSweeper(os.path.join(cfg_dir, sweep_file_name))
 	for sweep_id in range(0, sweeper.total_combinations):
-		sweeper.parse(sweep_id)
+		rtn_dict = sweeper.parse(sweep_id)
 		
 		report = 'idx: %d \nrun: %d \nenv: %s \noptimizer_name %s\nlearning_rate: %5f' % (
 			sweep_id,
-			sweeper.cfg.run,
-			sweeper.cfg.env,
-			sweeper.cfg.optimizer_name,
-			sweeper.cfg.learning_rate,
+			rtn_dict['run'],
+			rtn_dict['env'],
+			rtn_dict['optimizer_name'],
+			rtn_dict['learning_rate'],
 		)
 		print(report)
 		logger = logging.getLogger(str(sweep_id))
@@ -43,10 +42,10 @@ def test_sweeper():
 def test_plot_sweeper():
 	cfg_dir = 'test/cfg'
 	plot_file_name = 'plot.json'
-	plot_sweeper = PlotSweeper(os.path.join(cfg_dir, plot_file_name), PlotConfig)
+	plot_sweeper = PlotSweeper(os.path.join(cfg_dir, plot_file_name))
 	for plot_num in range(plot_sweeper.num_plots):
 		for curve_num in range(plot_sweeper.num_curves):
-			plot_sweeper.parse(plot_num, curve_num)
+			rtn_dict = plot_sweeper.parse(plot_num, curve_num)
 
 
 class MyPlotter(Plotter):
@@ -61,15 +60,13 @@ class MyPlotter(Plotter):
 		
 		return numbers
 	
-	def get_label(self, param_setting):
-		label = ''
-		for key, value in param_setting.items():
-			if key != 'ids':
-				label += key + ': '
-				label += str(value) + ', '
-		return label
+	def get_print_label(self):
+		return ['optimizer_name', 'learning_rate', 'beta1', 'beta2', 'beta3']
 	
-	def get_plot_indices(self, means_list, standard_errors_list, k):
+	def get_print_title(self):
+		return ['env']
+	
+	def get_plot_indices(self, means_list, standard_errors_list):
 		# if plot_cfg.criterion == "mean over all":
 		# 	mean_return_per_param_setting = np.array([means.mean() for means in means_list])
 		# elif plot_cfg.criterion == 'mean over second half':
@@ -77,7 +74,7 @@ class MyPlotter(Plotter):
 		# 		[np.array_split(means, 2)[1].mean() for means in means_list])
 		# else:
 		# 	raise NotImplementedError
-		
+		k = 1
 		mean_return_per_param_setting = np.array([means.mean() for means in means_list])
 		best_k_param_settings_indices = mean_return_per_param_setting.argsort()[-k:]
 		return best_k_param_settings_indices
@@ -86,11 +83,11 @@ class MyPlotter(Plotter):
 def test_plotter():
 	
 	plot_config_file = 'test/cfg/plot.json'
-	my_plotter = MyPlotter(plot_config_file, PlotConfig, ParamConfig)
+	my_plotter = MyPlotter(plot_config_file, PlotConfig)
 	my_plotter.plot()
 
 
 if __name__ == '__main__':
-	test_sweeper()
-	test_plot_sweeper()
+	# test_sweeper()
+	# test_plot_sweeper()
 	test_plotter()

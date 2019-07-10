@@ -7,9 +7,7 @@ class ParamSweeper(object):
     of hyper-parameters and create a Config object
     Important: parameters part of the sweep are provided in a list
     """
-    def __init__(self, config_file, cfg_cls):
-        self.cfg_cls = cfg_cls
-        self.cfg = cfg_cls()
+    def __init__(self, config_file):
         with open(config_file) as f:
             self.config_dict = json.load(f)
         self.total_combinations = 1
@@ -35,13 +33,15 @@ class ParamSweeper(object):
         return num_combinations_in_list
 
     def parse(self, idx):
-        self.reset()
-        self.cfg.run = int(idx / self.total_combinations)
-        self.cfg.param_setting = idx % self.total_combinations
+        rtn_dict = dict()
+        # rtn_dict['run'] = int(idx / self.total_combinations)
+        # rtn_dict['param_setting'] = idx % self.total_combinations
         
-        self.parse_helper(idx, self.config_dict)
+        self.parse_helper(idx, self.config_dict, rtn_dict)
+        
+        return rtn_dict
     
-    def parse_helper(self, idx, config_dict):
+    def parse_helper(self, idx, config_dict, rtv_dict):
         cumulative = 1
         # Populating sweep parameters
         for param, values in config_dict.items():
@@ -50,13 +50,10 @@ class ParamSweeper(object):
             num_combinations = self.get_num_combinations(values)
             value, relative_idx = self.get_value_and_relative_idx(values, int(idx / cumulative) % num_combinations)
             if type(value) is dict:
-                self.parse_helper(relative_idx, value)
+                self.parse_helper(relative_idx, value, rtv_dict)
             else:
-                setattr(self.cfg, param, value)
+                rtv_dict[param] = value
             cumulative *= num_combinations
-            
-    def reset(self):
-        self.cfg = self.cfg_cls()
     
     @ staticmethod
     def get_num_combinations(values):

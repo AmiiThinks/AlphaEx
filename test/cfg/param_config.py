@@ -9,7 +9,7 @@ import argparse
 
 class ParamConfig:
 
-    def __init__(self):
+    def __init__(self, param_dict=None):
         self.parser = argparse.ArgumentParser()
         
         # the following things must be defined in config file
@@ -111,3 +111,7 @@ class ParamConfig:
         
         # self.__eval_env = None
         self.tasks = False
+
+        if param_dict is not None:
+            for key, value in param_dict.items():
+                setattr(self, key, value)

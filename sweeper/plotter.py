@@ -7,12 +7,10 @@ import os
 
 
 class Plotter(object):
-	def __init__(self, plot_config_file, PlotConfig, Config):
+	def __init__(self, plot_config_file, PlotConfig):
 		self.plot_config_file = plot_config_file
 		self.plot_cfg_cls = PlotConfig
-		self.sweep_cfg_cls = Config
-		self.sweeper = None
-		self.plot_sweeper = None
+		self.plot_cfg = None
 	
 	def merge_ids(self):
 		"""
@@ -22,38 +20,61 @@ class Plotter(object):
 		:param cfg: choose parameter settings according to cfg. Parameters in cfg can only take one value.
 		:return: a list of parameter settings.
 		"""
-		
+		param_sweeper = ParamSweeper(
+			os.path.join(self.plot_cfg.cfg_dir, self.plot_cfg.sweep_file)
+		)
 		param_setting_list = []
-		plot_cfg_attributes = [a for a in dir(self.plot_sweeper.cfg) if not a.startswith('__')]
-		for idx in range(self.sweeper.total_combinations):
-			self.sweeper.parse(idx)
-			if not hasattr(self.plot_sweeper.cfg, 'num_plot_runs'):
-				self.plot_sweeper.cfg.num_plot_runs = 1
+		
+		for idx in range(param_sweeper.total_combinations):
+			if not hasattr(self.plot_cfg, 'num_plot_runs'):
+				self.plot_cfg.num_plot_runs = 1
+			
 			param_setting_list.append(
-				{'ids': [idx + run * self.sweeper.total_combinations for run in range(self.plot_sweeper.cfg.num_plot_runs)]})
-			for a in plot_cfg_attributes:
-				if hasattr(self.sweeper.cfg, a) and getattr(self.sweeper.cfg, a) != getattr(self.plot_sweeper.cfg, a):
+				{'ids': [idx + run * param_sweeper.total_combinations for run in range(self.plot_cfg.num_plot_runs)]}
+			)
+			
+			param_sweeper_dict = param_sweeper.parse(idx)
+			for key, value in param_sweeper_dict.items():
+				if hasattr(self.plot_cfg, key) and getattr(self.plot_cfg, key) != value:
 					param_setting_list = param_setting_list[:-1]
 					break
-				param_setting_list[-1][a] = getattr(self.plot_sweeper.cfg, a)
+				param_setting_list[-1][key] = value
 		
 		return param_setting_list
 	
-	def draw_curve(self):
-		self.plot_sweeper.cfg.param_setting_list = self.merge_ids()
+	def get_label(self, param_setting, print_labels):
+		print_str = ''
+		for label in print_labels:
+			if label in param_setting:
+				print_str += label + ': '
+				print_str += str(param_setting[label]) + '  '
+		return print_str
+	
+	def get_title(self, plot_sweeper, plot_cfg):
+		print_str = ''
+		for key, _ in plot_sweeper.config_dict['on_different_plots'].items():
+			print_str += str(key) + ': '
+			print_str += str(getattr(plot_cfg, key)) + '  '
+		return print_str
 		
-		Path(self.plot_sweeper.cfg.plot_dir).mkdir(parents=True, exist_ok=True)
+	def draw_curve(self):
+		param_setting_list = self.merge_ids()
+
+		Path(self.plot_cfg.plot_dir).mkdir(parents=True, exist_ok=True)
 		means_list = []
 		standard_errors_list = []
 		label_list = []
-		for param_setting in self.plot_sweeper.cfg.param_setting_list:
-			label = self.get_label(param_setting)
+		
+		print_labels = self.get_print_label()
+		
+		for param_setting in param_setting_list:
+			label = self.get_label(param_setting, print_labels)
 			label_list.append(label)
 			file_names = ['%d.txt' % id for id in param_setting['ids']]
 			n_numbers = []
 			min_length = None
 			for file_name in file_names:
-				file_path = os.path.join(os.path.join(self.plot_sweeper.cfg.log_dir, self.plot_sweeper.cfg.sweep_file), file_name)
+				file_path = os.path.join(os.path.join(self.plot_cfg.log_dir, self.plot_cfg.sweep_file), file_name)
 				numbers = self.get_numbers(file_path)
 				if min_length is not None and len(numbers) < min_length:
 					min_length = len(numbers)
@@ -64,32 +85,34 @@ class Plotter(object):
 			means_list.append(means)
 			standard_errors_list.append(standard_errors)
 		
-		indices = self.get_plot_indices(means_list, standard_errors_list, self.plot_sweeper.cfg.best_k)
+		indices = self.get_plot_indices(means_list, standard_errors_list)
 		
 		for idx in indices:
 			label = label_list[idx]
 			plt.fill_between(
-				np.arange(means_list[idx].shape[0]),
+				np.arange(means_list[idx].shape[0]) * self.plot_cfg.distance_between_two_points,
 				means_list[idx] - standard_errors_list[idx],
 				means_list[idx] + standard_errors_list[idx],
 				alpha=0.2
 			)
 			plt.plot(
-				np.arange(means_list[idx].shape[0]), means_list[idx], linewidth=1, label=label
+				np.arange(means_list[idx].shape[0]) * self.plot_cfg.distance_between_two_points,
+				means_list[idx], linewidth=1, label=label
 			)
 		
 	def plot(self):
-		self.plot_sweeper = PlotSweeper(self.plot_config_file, self.plot_cfg_cls)
-		for plot_num in range(self.plot_sweeper.num_plots):
-			for curve_num in range(self.plot_sweeper.num_curves):
-				self.plot_sweeper.parse(plot_num, curve_num)
-				self.sweeper = ParamSweeper(
-					os.path.join(self.plot_sweeper.cfg.cfg_dir, self.plot_sweeper.cfg.sweep_file), self.sweep_cfg_cls
-				)
+		plot_sweeper = PlotSweeper(self.plot_config_file)
+		for plot_num in range(plot_sweeper.num_plots):
+			for curve_num in range(plot_sweeper.num_curves):
+				plot_sweeper_dict = plot_sweeper.parse(plot_num, curve_num)
+				self.plot_cfg = self.plot_cfg_cls(plot_sweeper_dict)
 				self.draw_curve()
 			plt.legend(loc='lower right')
-			plt.xlabel('steps')
-			save_dir = os.path.join(self.plot_sweeper.cfg.plot_dir, self.plot_sweeper.cfg.sweep_file)
+			title = self.get_title(plot_sweeper, self.plot_cfg)
+			plt.title(title)
+			plt.xlabel(self.plot_cfg.x_label)
+			plt.ylabel(self.plot_cfg.y_label)
+			save_dir = os.path.join(self.plot_cfg.plot_dir, self.plot_cfg.sweep_file)
 			if not os.path.exists(save_dir):
 				os.makedirs(save_dir)
 			plt.savefig(os.path.join(save_dir, str(plot_num) + '.pdf'))
@@ -98,8 +121,8 @@ class Plotter(object):
 	def get_numbers(self, file_path):
 		raise NotImplementedError
 	
-	def get_label(self, param_setting):
+	def get_print_label(self):
 		raise NotImplementedError
 	
-	def get_plot_indices(self, means_list, standard_errors_list, k):
+	def get_plot_indices(self, means_list, standard_errors_list):
 		raise NotImplementedError
