@@ -1,7 +1,7 @@
 import json
 
 
-class ParamSweeper(object):
+class Sweeper(object):
     """
     The purpose of this class is to take an index, identify a configuration
     of hyper-parameters and create a Config object

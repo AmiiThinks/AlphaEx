@@ -1,14 +1,53 @@
 {
-	"on_the_same_plot": {
-		"sweep_file": ["param.json"],
-		"num_plot_runs": [1],
-		"num_plot_steps": [10000],
-		"print_label": ["learning_rate"],
-		"print_label_type": [0],
-		"optimizer_name": ["Adam", "Adam2", "Adam3"]
-	},
+	"on_the_same_plot":
+	[
+		{
+			"sweep_file": ["param.json"],
+			"num_plot_runs": [1],
+			"num_plot_steps": [10000],
+			"print_label": ["learning_rate"],
+			"print_label_type": [0],
+			"sweeps": [
+				{
+					"optimizer_name": ["Adam"]
+				},
+				{
+					"optimizer_name": ["Richprop"],
+					"clip_denom": [1, 10]
+				},
+				{
+					"optimizer_name": ["Opt"],
+					"alpha":
+					[
+						{
+							"alpha1": [1],
+							"alpha2": [10]
+						},
+						{
+							"alpha1": [10],
+							"alpha2": [100]
+						}
+					]
+				}
+			]
+		}
+	],
 	
-    "on_different_plots": {
-	    "env": ["CartPole-v0", "MountainCar-v0"]
-    }
+    "on_different_plots":
+    [
+	    {
+			"env_algorithm":
+			[
+				{
+					"env": ["CartPole-v0", "MountainCar-v0"],
+					"algorithm": ["q_learning", "actor_critic"]
+				},
+				{
+					"env": ["Reacher-v2", "swimmer"],
+					"algorithm": ["ddpg", "ppo"]
+				}
+			],
+		    "learning_rate": [0.005, 0.0001]
+	    }
+    ]
 }

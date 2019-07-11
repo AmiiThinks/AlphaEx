@@ -1,7 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from sweeper.param_sweeper import ParamSweeper
-from sweeper.plot_sweeper import PlotSweeper
+from sweeper.sweeper import Sweeper
 from pathlib import Path
 import os
 
@@ -20,7 +19,7 @@ class Plotter(object):
 		:param cfg: choose parameter settings according to cfg. Parameters in cfg can only take one value.
 		:return: a list of parameter settings.
 		"""
-		param_sweeper = ParamSweeper(
+		param_sweeper = Sweeper(
 			os.path.join(self.plot_cfg.cfg_dir, self.plot_cfg.sweep_file)
 		)
 		param_setting_list = []
@@ -48,13 +47,6 @@ class Plotter(object):
 			if label in param_setting:
 				print_str += label + ': '
 				print_str += str(param_setting[label]) + '  '
-		return print_str
-	
-	def get_title(self, plot_sweeper, plot_cfg):
-		print_str = ''
-		for key, _ in plot_sweeper.config_dict['on_different_plots'].items():
-			print_str += str(key) + ': '
-			print_str += str(getattr(plot_cfg, key)) + '  '
 		return print_str
 		
 	def draw_curve(self):
@@ -101,15 +93,19 @@ class Plotter(object):
 			)
 		
 	def plot(self):
-		plot_sweeper = PlotSweeper(self.plot_config_file)
-		for plot_num in range(plot_sweeper.num_plots):
-			for curve_num in range(plot_sweeper.num_curves):
-				plot_sweeper_dict = plot_sweeper.parse(plot_num, curve_num)
-				self.plot_cfg = self.plot_cfg_cls(plot_sweeper_dict)
+		plot_sweeper = Sweeper(self.plot_config_file)
+		for plot_num in range(plot_sweeper.config_dict['on_different_plots'][0]['num_combinations']):
+			plot_dict = dict()
+			if 'on_different_plots' in plot_sweeper.config_dict:
+				plot_sweeper.parse_helper(plot_num, plot_sweeper.config_dict['on_different_plots'][0], plot_dict)
+			plot_label = str(plot_dict)
+			for curve_num in range(plot_sweeper.config_dict['on_the_same_plot'][0]['num_combinations']):
+				if 'on_the_same_plot' in plot_sweeper.config_dict:
+					plot_sweeper.parse_helper(curve_num, plot_sweeper.config_dict['on_the_same_plot'][0], plot_dict)
+				self.plot_cfg = self.plot_cfg_cls(plot_dict)
 				self.draw_curve()
 			plt.legend(loc='lower right')
-			title = self.get_title(plot_sweeper, self.plot_cfg)
-			plt.title(title)
+			plt.title(plot_label)
 			plt.xlabel(self.plot_cfg.x_label)
 			plt.ylabel(self.plot_cfg.y_label)
 			save_dir = os.path.join(self.plot_cfg.plot_dir, self.plot_cfg.sweep_file)

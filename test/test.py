@@ -1,5 +1,4 @@
-from sweeper.param_sweeper import ParamSweeper
-from sweeper.plot_sweeper import PlotSweeper
+from sweeper.sweeper import Sweeper
 from sweeper.plotter import Plotter
 import os
 import logging
@@ -11,13 +10,12 @@ def test_sweeper():
 	cfg_dir = 'test/cfg'
 	log_dir = 'test/log'
 	sweep_file_name = 'param.json'
-	sweeper = ParamSweeper(os.path.join(cfg_dir, sweep_file_name))
-	for sweep_id in range(0, sweeper.total_combinations):
-		rtn_dict = sweeper.parse(sweep_id)
+	param_sweeper = Sweeper(os.path.join(cfg_dir, sweep_file_name))
+	for sweep_id in range(0, param_sweeper.total_combinations):
+		rtn_dict = param_sweeper.parse(sweep_id)
 		
-		report = 'idx: %d \nrun: %d \nenv: %s \noptimizer_name %s\nlearning_rate: %5f' % (
+		report = 'idx: %d \nenv: %s \noptimizer_name %s\nlearning_rate: %5f' % (
 			sweep_id,
-			rtn_dict['run'],
 			rtn_dict['env'],
 			rtn_dict['optimizer_name'],
 			rtn_dict['learning_rate'],
@@ -39,15 +37,6 @@ def test_sweeper():
 		fh.close()
 
 
-def test_plot_sweeper():
-	cfg_dir = 'test/cfg'
-	plot_file_name = 'plot.json'
-	plot_sweeper = PlotSweeper(os.path.join(cfg_dir, plot_file_name))
-	for plot_num in range(plot_sweeper.num_plots):
-		for curve_num in range(plot_sweeper.num_curves):
-			rtn_dict = plot_sweeper.parse(plot_num, curve_num)
-
-
 class MyPlotter(Plotter):
 	def get_numbers(self, file_path):
 		
@@ -61,7 +50,7 @@ class MyPlotter(Plotter):
 		return numbers
 	
 	def get_print_label(self):
-		return ['optimizer_name', 'learning_rate', 'beta1', 'beta2', 'beta3']
+		return ['optimizer_name', 'learning_rate', 'beta1', 'beta2', 'clip_denom', 'alpha1', 'alpha2']
 	
 	def get_print_title(self):
 		return ['env']
@@ -88,6 +77,5 @@ def test_plotter():
 
 
 if __name__ == '__main__':
-	# test_sweeper()
-	# test_plot_sweeper()
+	test_sweeper()
 	test_plotter()

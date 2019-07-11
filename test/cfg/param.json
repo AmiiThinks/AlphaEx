@@ -1,66 +1,42 @@
 {
-	"env": ["CartPole-v0", "MountainCar-v0"],
+	"env_algorithm":
+	[
+		{
+			"env": ["CartPole-v0", "MountainCar-v0"],
+			"algorithm": ["q_learning", "actor_critic"]
+		},
+		{
+			"env": ["Reacher-v2", "swimmer"],
+			"algorithm": ["ddpg", "ppo"]
+		}
+	],
+	"learning_rate": [0.005, 0.0001],
+	"beta1": [0, 0.9],
+	"beta2": [0.9, 0.99],
+	"amsgrad": [false, true],
 	"sweep":
 	[
 		{
-		    "optimizer_name": ["Adam"],
-	        "learning_rate": [0.005, 0.0001, 0.00005],
-			"beta":
-			[
-				{
-	                "beta1": [0, 0.9]
-				},
-				{
-	                "beta2": [10, 10.9]
-				},
-				{
-	                "beta3": [20, 20.9]
-				}
-			]
+		    "optimizer_name": ["Adam"]
 		},
 		{
-		    "optimizer_name": ["Adam2"],
-	        "learning_rate": [5, 1, 0.5],
-			"beta":
-			[
-				{
-					"amsgrad": [false, true],
-					"bbb":
-					[
-							{
-								"bbb": [0, 0.5, 0.9]
-							},
-							{
-								"bbb": [10, 10.9],
-								"beta1": [0.1, 0.2]
-							}
-					]
-				},
-				{
-		            "beta2": [10, 10.9],
-					"beta1": [0.1, 0.2]
-				},
-				{
-					"beta2": [20, 20.9],
-		            "beta3": [20, 20.9]
-				}
-			]
+		    "optimizer_name": ["Richprop"],
+			"clip_denom": [1, 10]
 		},
 		{
-		    "optimizer_name": ["Adam3"],
-	        "learning_rate": [10, 20, 30],
-			"beta":
+		    "optimizer_name": ["Opt"],
+			"alpha":
 			[
 				{
-	                "beta1": [0, 0.9]
+					"alpha1": [1],
+					"alpha2": [10]
 				},
 				{
-	                "beta2": [10, 10.9]
-				},
-				{
-	                "beta3": [20, 20.9]
+					"alpha1": [10],
+					"alpha2": [100]
 				}
 			]
 		}
-	]
+	],
+	"nn_structure": [[100, 100], [50, 50]]
 }
