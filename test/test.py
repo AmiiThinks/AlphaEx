@@ -52,9 +52,6 @@ class MyPlotter(Plotter):
 	def get_print_label(self):
 		return ['optimizer_name', 'learning_rate', 'beta1', 'beta2', 'clip_denom', 'alpha1', 'alpha2']
 	
-	def get_print_title(self):
-		return ['env']
-	
 	def get_plot_indices(self, means_list, standard_errors_list):
 		# if plot_cfg.criterion == "mean over all":
 		# 	mean_return_per_param_setting = np.array([means.mean() for means in means_list])
