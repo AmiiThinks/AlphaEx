@@ -5,49 +5,25 @@
 			"sweep_file": ["param.json"],
 			"num_plot_runs": [1],
 			"num_plot_steps": [10000],
-			"print_label": ["learning_rate"],
 			"print_label_type": [0],
-			"sweeps": [
-				{
-					"optimizer_name": ["Adam"]
-				},
-				{
-					"optimizer_name": ["Richprop"],
-					"clip_denom": [1, 10]
-				},
-				{
-					"optimizer_name": ["Opt"],
-					"alpha":
-					[
-						{
-							"alpha1": [1],
-							"alpha2": [10]
-						},
-						{
-							"alpha1": [10],
-							"alpha2": [100]
-						}
-					]
-				}
-			]
+			"param8": [[10, 10], [20, 20, 20]]
 		}
 	],
 	
     "on_different_plots":
     [
 	    {
-			"env_algorithm":
+			"param1-2":
 			[
 				{
-					"env": ["CartPole-v0", "MountainCar-v0"],
-					"algorithm": ["q_learning", "actor_critic"]
+					"param1": ["param1_1", "param1_2"],
+					"param2": ["param2_1", "param2_2"]
 				},
 				{
-					"env": ["Reacher-v2", "swimmer"],
-					"algorithm": ["ddpg", "ppo"]
+					"param1": ["param1_3", "param1_4"],
+					"param2": ["param2_3", "param2_4"]
 				}
-			],
-		    "learning_rate": [0.005, 0.0001]
+			]
 	    }
     ]
 }

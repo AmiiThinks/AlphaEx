@@ -1,42 +1,40 @@
 {
-	"env_algorithm":
+	"param1-2":
 	[
 		{
-			"env": ["CartPole-v0", "MountainCar-v0"],
-			"algorithm": ["q_learning", "actor_critic"]
+			"param1": ["param1_1", "param1_2"],
+			"param2": ["param2_1", "param2_2"]
 		},
 		{
-			"env": ["Reacher-v2", "swimmer"],
-			"algorithm": ["ddpg", "ppo"]
+			"param1": ["param1_3", "param1_4"],
+			"param2": ["param2_3", "param2_4"]
 		}
 	],
-	"learning_rate": [0.005, 0.0001],
-	"beta1": [0, 0.9],
-	"beta2": [0.9, 0.99],
-	"amsgrad": [false, true],
-	"sweep":
+	"param3": [1, 2, 3],
+	"param4": [true, false],
+	"param5-7":
 	[
 		{
-		    "optimizer_name": ["Adam"]
+		    "param5": ["param5_1"]
 		},
 		{
-		    "optimizer_name": ["Richprop"],
-			"clip_denom": [1, 10]
+		    "param5": ["param5_2"],
+			"param6": ["param6_1", "param6_2"]
 		},
 		{
-		    "optimizer_name": ["Opt"],
-			"alpha":
+		    "param5": ["param5_3"],
+			"param6-7":
 			[
 				{
-					"alpha1": [1],
-					"alpha2": [10]
+					"param6": ["param6_1"],
+					"param7": ["param7_1"]
 				},
 				{
-					"alpha1": [10],
-					"alpha2": [100]
+					"param6": ["param6_2"],
+					"param7": ["param7_2"]
 				}
 			]
 		}
 	],
-	"nn_structure": [[100, 100], [50, 50]]
+	"param8": [[10, 10], [20, 20, 20]]
 }

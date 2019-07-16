@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from sweeper.sweeper import Sweeper
+from experimenter.sweeper import Sweeper
 from pathlib import Path
 import os
 
