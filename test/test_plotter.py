@@ -1,4 +1,4 @@
-from experimenter.plotter import Plotter
+from alphaex.plotter import Plotter
 from test.cfg.plot_config import PlotConfig
 import numpy as np
 

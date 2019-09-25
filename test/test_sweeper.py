@@ -1,4 +1,4 @@
-from experimenter.sweeper import Sweeper
+from alphaex.sweeper import Sweeper
 import logging
 import os
 

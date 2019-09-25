@@ -8,7 +8,7 @@ with open('LICENSE') as f:
     license = f.read()
 
 setup(
-    name='experimenter',
+    name='alphaex',
     version='0.1.0',
     description='sweeper and plotter',
     long_description=readme,
