@@ -1,5 +1,5 @@
 # AlphaEx
-The AlphaEx (Alpha Experiment) is a python toolkit helps you run a large number of experiments easily and efficiently.
+AlphaEx (Alpha Experiment) is a python toolkit helps you run a large number of experiments easily and efficiently.
 
 With AlphaEx, you can:
 1. Run thousands of experiments on multiple computer clusters automatically, so that you can squeeze the most of your computation hardware.
@@ -9,10 +9,10 @@ With AlphaEx, you can:
 The above 3 functions are implemented in 3 self-contained python scripts
 `submitter.py`, `sweeper.py`, and `plotter.py`.
 
-Notice:
-1. the sweeper and plotter can be used in any machine. But submitter
-currently is only compatible with slurm, so make sure you have access to
-at least one remote cluster which has slurm installed. For example, I
+Warning:
+1. The sweeper and plotter can be used in any machine with python installed. But submitter
+currently is only compatible with slurm. Make sure you have access to
+at least one cluster which has slurm installed. For example, I
 have an account on compute canada, so I can use clusters including
 cedar, mp2, etc.
 2. The submitter current only support cpu jobs. I hope to extend that to support gpu jobs but this might take a while. If you are interested in doing that let's discuss about this.
@@ -20,12 +20,29 @@ cedar, mp2, etc.
 To test these 3 modules, run
 `python test/test_sweeper.py`, `python test/test_plotter.py` and
 `python test/test_submitter.py` (submitter needs to be configured first
-with you own setting. test/test_submitter.py is an example)
+with you own setting. Please refer to the next section.)
 .
 
 ## Submitter
-### How to use it
-To use submitter, you need to first have automatic ssh access to remote clusters,
+
+### What is submitter
+When you have 10000 jobs to run and 10 computer clusters to use.
+It is not a good idea to splitting these experiments into 10 portions and run each portion of experiments in 1 cluster.
+One reason is each computer cluster has different performance so some may finish its portion much
+ faster than others. The other reason is each cluster may have different restrictions on the number of jos submitted.
+ But the most important reason is this boring work can be automated.
+
+This is exactly what Submitter does. It automatically submits all jobs for you in simple way.
+
+1. Submit as many jobs as you want to each cluster (but not exceeding the max number of jobs allowed)
+2. Periodically check if there are any job finished
+3. If there is any, submit same number of new jobs as the finished ones until all jobs are submitted.
+
+
+### How to use submitter
+
+#### Ssh Automation
+To use submitter, you need to first have automatic ssh access to your remote clusters,
 so that every time when you ssh to a remote cluster, just type in `ssh clustername`
 without entering the full url, your username and password.
 
@@ -45,10 +62,11 @@ Host <cluster nickname>
 ```
 Next time when you want to add a new cluster, just do step 2 and step 3.
 
-Now you can use submitter. test/test_submitter.py is a simple example.
+#### An Example
+Now you can use submitter. test/test_submitter.py is a good example to start with.
 
 ```
-from experimenter.submitter import Submitter
+from alphaex.submitter import Submitter
 
 
 def test_submitter():
@@ -56,13 +74,13 @@ def test_submitter():
 		{
 			'name': 'mp2',
 			'capacity': 200,
-			'project_root_dir': '/home/yiwan/projects/def-sutton/yiwan/experimenter',
+			'project_root_dir': '/home/yiwan/projects/def-sutton/yiwan/alphaex',
 			'script_path': 'test/submit.sh'
 		},
 		{
 			'name': 'cedar',
 			'capacity': 100,
-			'project_root_dir': '/home/yiwan/projects/def-sutton/yiwan/experimenter',
+			'project_root_dir': '/home/yiwan/projects/def-sutton/yiwan/alphaex',
 			'script_path': 'test/submit.sh'
 		},
 	]
@@ -81,13 +99,15 @@ Each dictionary gives information of a cluster:
 
 `name`: the nickname of your remote cluster, it should be defined in .ssh/config.
 
-`capacity`: maximum number of jobs you want to run in that cluster
+`capacity`: maximum number of jobs you want to run in that cluster, usually each cluster provides this information in its user manuel.
 
-`project_root_dir`: the root directory for your project
+`project_root_dir`: the root directory for your project in the remote cluster
 
-`script_path`: the path of the slurm array job script in the remote cluster that you want to submit
+`script_path`: the path of the slurm array job submission script in the remote cluster.
 
-test/submit.sh is an example of the such script:
+Note that currently we only support array job submission in slurm, since this is the most effective way when you have large number of jobs.
+
+`test/submit.sh` is an example of the array job submission script, please refer to the user manual of slurm if you don't understand the following script.
 
 ```
 #!/bin/bash
@@ -105,13 +125,135 @@ mkdir -p error
 sleep $((SLURM_ARRAY_TASK_ID / 10))
 ```
 
-In this simple example, each job is just sleeping for some time. The sleeping time depends on the SLURM_ARRAY_TASK_ID.
-Each job has its own SLURM_ARRAY_TASK_ID which will be assigned by submitter.
-Refer to the user manual of slurm if you don't understand the above script.
+In this simple example, each job is just sleeping for some time. The sleeping time depends on the unique id of each job SLURM_ARRAY_TASK_ID.
+This ID will be assigned by submitter automatically.
 
-Now run `python test/test_submitter.py` in your local machine, it will submit 1000 jobs to cluster mp2 and cedar.
+Now run `python test/test_submitter.py` in your local machine, it will automatically submit job 1-1000 to cluster mp2 and cedar for you.
 
-### How it works
-In the above example, when you run test_submitter.py, the submitter will submit array jobs with array indices 1-200 to cluster mp2, and submit array jobs 201-300 to cluster cedar.
+In the above example, the total capacity of mp2 and cedar are less than the total number jobs you want to run. So submitter can not
+submit all jobs to these two clusters at once.
+Instead, it will submit array jobs with array indices 1-200 to cluster mp2, and submit array jobs 201-300 to cluster cedar.
 After that, it will periodically check whether there is any submitted job finishes.
-If there is any, submitter will submit the same number of new jobs as the finished ones, until all 1000 jobs are submitted.
+And if there is any, the submitter will submit same number of new jobs as the finished ones until all 1000 jobs are submitted.
+
+## Sweeper
+To sweep all different parameter settings, first define a Json file which specifies all the combinations of parameters that you want to sweep over.
+`cfg/param.json` is an example:
+
+```
+{
+	"param1-2":
+	[
+		{
+			"param1": ["param1_1", "param1_2"],
+			"param2": ["param2_1", "param2_2"]
+		},
+		{
+			"param1": ["param1_3", "param1_4"],
+			"param2": ["param2_3", "param2_4"]
+		}
+	],
+	"param3": [1, 2, 3],
+	"param4": [0.1, 0.2, 0.3],
+	"param5-7":
+	[
+		{
+		    "param5": ["param5_1"]
+		},
+		{
+		    "param5": ["param5_2"],
+			"param6": ["param6_1", "param6_2"]
+		},
+		{
+		    "param5": ["param5_3"],
+			"param6-7":
+			[
+				{
+					"param6": ["param6_1"],
+					"param7": ["param7_1"]
+				},
+				{
+					"param6": ["param6_2"],
+					"param7": ["param7_2"]
+				}
+			]
+		}
+	],
+	"param8": [true, false]
+}
+```
+
+**The general principle is: every parameter combination takes only one element from every list, and takes all elements from every dictionary.**
+
+In our example, a legitimate combination of parameters is
+
+```
+param1: param1_1
+param2: param2_2
+param3: 2
+param4: 0.1
+param5: param5_2
+param6: param6_1
+param8: False
+```
+
+Sweeper will generate all different combinations of parameters. test/test_sweeper.py is an example of using it
+
+```
+from alphaex.sweeper import Sweeper
+import logging
+import os
+
+
+def test_sweeper():
+	cfg_dir = 'test/cfg'
+	log_dir = 'test/log'
+	sweep_file_name = 'param.json'
+	param_sweeper = Sweeper(os.path.join(cfg_dir, sweep_file_name))
+	for sweep_id in range(0, param_sweeper.total_combinations):
+		rtn_dict = param_sweeper.parse(sweep_id)
+
+		report = 'idx: %d \nparam1: %s \nparam2: %s\nparam3: %s\nparam4: %s \nparam5: %s\nparam6: %s\nparam7: %s \nparam8: %s\n' % (
+			sweep_id,
+			rtn_dict.get('param1', None),
+			rtn_dict.get('param2', None),
+			rtn_dict.get('param3', None),
+			rtn_dict.get('param4', None),
+			rtn_dict.get('param5', None),
+			rtn_dict.get('param6', None),
+			rtn_dict.get('param7', None),
+			rtn_dict.get('param8', None),
+		)
+		print(report)
+		logger = logging.getLogger(str(sweep_id))
+		logger.setLevel(logging.INFO)
+		if not os.path.exists(os.path.join(log_dir, sweep_file_name)):
+			os.makedirs(os.path.join(log_dir, sweep_file_name))
+		log_file_path = os.path.join(log_dir, sweep_file_name, str(sweep_id) + '.txt')
+		if os.path.exists(log_file_path):
+			os.remove(log_file_path)
+		fh = logging.FileHandler(log_file_path)
+		fh.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s: %(message)s'))
+		fh.setLevel(logging.INFO)
+		logger.addHandler(fh)
+		for _ in range(100):
+			logger.info(report)
+		fh.close()
+
+
+if __name__ == '__main__':
+	test_sweeper()
+
+```
+
+In the above example, an sweeper instantiation is initialized with the json file path
+```
+param_sweeper = Sweeper(os.path.join(cfg_dir, sweep_file_name))
+```
+The sweeper class has a method `parse`, which returns a dictionary containing a combination of parameters given an sweep id.
+Each combination has the unique sweep id.
+```
+rtn_dict = param_sweeper.parse(sweep_id)
+```
+
+## Plotter

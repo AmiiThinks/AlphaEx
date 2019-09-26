@@ -7,14 +7,14 @@ def test_submitter():
 			'name': 'mp2',
 			'capacity': 200,
 			'user_name': 'yiwan',
-			'project_root_dir': '/home/yiwan/projects/def-sutton/yiwan/alphaex',
+			'project_root_dir': '/home/yiwan/projects/def-sutton/yiwan/AlphaEx',
 			'script_path': 'test/submit.sh'
 		},
 		{
 			'name': 'cedar',
 			'capacity': 100,
 			'user_name': 'yiwan',
-			'project_root_dir': '/home/yiwan/projects/def-sutton/yiwan/alphaex',
+			'project_root_dir': '/home/yiwan/projects/def-sutton/yiwan/AlphaEx',
 			'script_path': 'test/submit.sh'
 		},
 	]

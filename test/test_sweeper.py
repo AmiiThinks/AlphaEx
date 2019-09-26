@@ -11,7 +11,7 @@ def test_sweeper():
 	for sweep_id in range(0, param_sweeper.total_combinations):
 		rtn_dict = param_sweeper.parse(sweep_id)
 		
-		report = 'idx: %d \nparam1: %s \nparam2 %s\nparam3: %s\nparam4: %s \nparam5 %s\nparam6: %s\nparam7: %s \nparam8 %s\n' % (
+		report = 'idx: %d \nparam1: %s \nparam2: %s\nparam3: %s\nparam4: %s \nparam5: %s\nparam6: %s\nparam7: %s \nparam8: %s\n' % (
 			sweep_id,
 			rtn_dict.get('param1', None),
 			rtn_dict.get('param2', None),

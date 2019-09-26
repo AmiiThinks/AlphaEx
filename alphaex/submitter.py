@@ -25,24 +25,24 @@ class Submitter(object):
 	
 	def submit(self):
 		for cluster in self.clusters:
-			bash_script = "ssh %s whoami" % cluster.name
+			bash_script = "ssh %s whoami" % cluster['name']
 			myCmd = os.popen(bash_script).read()
-			cluster.username = myCmd.split('\n')
+			cluster['username'] = myCmd.split('\n')[0]
 			
 		while True:
 			for cluster in self.clusters:
-				bash_script = "ssh %s squeue -u %s -r" % (cluster.name, cluster.user_name)
+				bash_script = "ssh %s squeue -u %s -r" % (cluster['name'], cluster['username'])
 				myCmd = os.popen(bash_script).read()
 				lines = myCmd.split('\n')
 				num_current_jobs = 0
 				for line in lines:
 					if cluster['script_path'].split('/')[-1] in line:
 						num_current_jobs += 1
-				print("cluster %s has %d jobs" % (cluster.name, num_current_jobs))
+				print("cluster %s has %d jobs" % (cluster['name'], num_current_jobs))
 				
-				if num_current_jobs < cluster.capacity:
+				if num_current_jobs < cluster['capacity']:
 					done = self.submit_jobs(
-						min(cluster.capacity - num_current_jobs, self.total_num_jobs - self.starting_job_num),
+						min(cluster['capacity'] - num_current_jobs, self.total_num_jobs - self.starting_job_num),
 						cluster['name'], cluster['project_root_dir'], cluster['script_path']
 					)
 					if done:
