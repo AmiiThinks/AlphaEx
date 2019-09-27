@@ -38,13 +38,13 @@ different restrictions on the number of jos submitted.
 Submitter automatically submits all jobs for you in a simple way.
 
 1. Connecting to all user-defined clusters.
-![Loading...](https://raw.githubusercontent.com/yiwan-rl/AlphaEx/master/images/submitter_1.png)
+<p><img src="./images/submitter_1.png" alt="test" width="300" height="270"></p>
 2. Submit as many jobs as you want to each cluster (but not exceeding the max number of jobs allowed)
-![Loading...](https://raw.githubusercontent.com/yiwan-rl/AlphaEx/master/images/submitter_2.png)
+<p><img src="./images/submitter_2.png" alt="test" width="300" height="300"></p>
 3. Periodically check if there are jobs finished
-![Loading...](https://raw.githubusercontent.com/yiwan-rl/AlphaEx/master/images/submitter_3.png)
+<p><img src="./images/submitter_3.png" alt="test" width="300" height="300"></p>
 4. If there is any, submit same number of new jobs as the finished ones until all jobs are submitted.
-![Loading...](https://raw.githubusercontent.com/yiwan-rl/AlphaEx/master/images/submitter_4.png)
+<p><img src="./images/submitter_4.png" alt="test" width="300" height="300"></p>
 
 ### How to use submitter
 
