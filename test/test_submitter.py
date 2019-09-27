@@ -5,20 +5,18 @@ def test_submitter():
 	clusters = [
 		{
 			'name': 'mp2',
-			'capacity': 200,
-			'user_name': 'yiwan',
+			'capacity': 3,
 			'project_root_dir': '/home/yiwan/projects/def-sutton/yiwan/AlphaEx',
 			'script_path': 'test/submit.sh'
 		},
 		{
 			'name': 'cedar',
-			'capacity': 100,
-			'user_name': 'yiwan',
+			'capacity': 2,
 			'project_root_dir': '/home/yiwan/projects/def-sutton/yiwan/AlphaEx',
 			'script_path': 'test/submit.sh'
 		},
 	]
-	submitter = Submitter(clusters, 1000)
+	submitter = Submitter(clusters, 10)
 	submitter.submit()
 	
 

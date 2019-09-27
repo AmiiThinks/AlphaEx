@@ -6,21 +6,21 @@ import os
 def test_sweeper():
 	cfg_dir = 'test/cfg'
 	log_dir = 'test/log'
-	sweep_file_name = 'param.json'
-	param_sweeper = Sweeper(os.path.join(cfg_dir, sweep_file_name))
-	for sweep_id in range(0, param_sweeper.total_combinations):
-		rtn_dict = param_sweeper.parse(sweep_id)
+	sweep_file_name = 'variables.json'
+	sweeper = Sweeper(os.path.join(cfg_dir, sweep_file_name))
+	for sweep_id in range(0, sweeper.total_combinations):
+		rtn_dict = sweeper.parse(sweep_id)
 		
-		report = 'idx: %d \nparam1: %s \nparam2: %s\nparam3: %s\nparam4: %s \nparam5: %s\nparam6: %s\nparam7: %s \nparam8: %s\n' % (
+		report = 'idx: %d \nsimulator: %s \nalgorithm: %s\nparam1: %s\nparam2: %s \nparam3: %s\nparam4: %s\nparam5: %s\nparam6: %s\n' % (
 			sweep_id,
+			rtn_dict.get('simulator', None),
+			rtn_dict.get('algorithm', None),
 			rtn_dict.get('param1', None),
 			rtn_dict.get('param2', None),
 			rtn_dict.get('param3', None),
 			rtn_dict.get('param4', None),
 			rtn_dict.get('param5', None),
-			rtn_dict.get('param6', None),
-			rtn_dict.get('param7', None),
-			rtn_dict.get('param8', None),
+			rtn_dict.get('param6', None)
 		)
 		print(report)
 		logger = logging.getLogger(str(sweep_id))

@@ -4,8 +4,8 @@ import json
 class Sweeper(object):
     """
     The purpose of this class is to take an index, identify a configuration
-    of hyper-parameters and create a Config object
-    Important: parameters part of the sweep are provided in a list
+    of variables and create a Config object
+    Important: variables part of the sweep are provided in a list
     """
     def __init__(self, config_file):
         with open(config_file) as f:
@@ -20,7 +20,7 @@ class Sweeper(object):
 
     def set_num_combinations_helper(self, config_dict):
         num_combinations_in_list = 1
-        for params, values in config_dict.items():
+        for _, values in config_dict.items():
             num_combinations = 0
             for value in values:
                 if type(value) is dict:
@@ -43,16 +43,16 @@ class Sweeper(object):
     
     def parse_helper(self, idx, config_dict, rtv_dict):
         cumulative = 1
-        # Populating sweep parameters
-        for param, values in config_dict.items():
-            if param == 'num_combinations':
+        # Populating sweep variables
+        for variable, values in config_dict.items():
+            if variable == 'num_combinations':
                 continue
             num_combinations = self.get_num_combinations(values)
             value, relative_idx = self.get_value_and_relative_idx(values, int(idx / cumulative) % num_combinations)
             if type(value) is dict:
                 self.parse_helper(relative_idx, value, rtv_dict)
             else:
-                rtv_dict[param] = value
+                rtv_dict[variable] = value
             cumulative *= num_combinations
     
     @ staticmethod

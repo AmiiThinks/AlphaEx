@@ -4,6 +4,13 @@ import time
 
 class Submitter(object):
 	def __init__(self, clusters, total_num_jobs, duration_between_two_checks=60):
+		# sanity check
+		required_members = ["name", "capacity", "project_root_dir", "script_path"]
+		for cluster in clusters:
+			for member in required_members:
+				if member not in cluster:
+					print("%s not defined in clusters" %member)
+					exit(1)
 		self.clusters = clusters
 		self.starting_job_num = 0
 		self.total_num_jobs = total_num_jobs

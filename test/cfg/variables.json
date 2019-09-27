@@ -1,0 +1,46 @@
+{
+	"experiments":
+	[
+	    {
+	        "simulator": ["simulator_1"],
+	        "algorithm and parameters": [
+	            {
+	                "algorithm": ["algorithm_1"],
+	                "param1-2":
+	                [
+	                    {
+	                        "param1": ["param1_1", "param1_2"],
+	                        "param2": [0.1, 0.2]
+	                    },
+	                    {
+	                        "param1": ["param1_3", "param1_4"],
+	                        "param2": [0.3, 0.4]
+	                    }
+	                ],
+	                "param3": [1, 2, 3]
+	            },
+		        
+	            {
+	                "algorithm": ["algorithm_2"],
+	                "param1":["param1_3", "param1_4"],
+	                "param4": [true, false]
+	            }
+	        ]
+	    },
+		{
+	        "simulator": ["simulator_2"],
+	        "algorithm and parameters": [
+	            {
+	                "algorithm": ["algorithm_2"],
+	                "param1":["param1_3", "param1_4"],
+	                "param4": [true, false]
+	            },
+		        {
+	                "algorithm": ["algorithm_3"],
+	                "param5":["param5_1"],
+	                "param6": [true]
+	            }
+	        ]
+	    }
+	]
+}

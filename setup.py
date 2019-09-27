@@ -10,7 +10,7 @@ with open('LICENSE') as f:
 setup(
     name='alphaex',
     version='0.1.0',
-    description='sweeper and plotter',
+    description='AlphaEx: A Python Toolkit for Managing Large Number of Experiments',
     long_description=readme,
     author='Yi Wan',
     author_email='umichyiwan@gmail.com',
