@@ -46,13 +46,6 @@ class Submitter(object):
 				print("length of list exp_results_from must equal to length of list exp_results_to")
 				exit(1)
 		
-		# mkdir output_dir
-		for cluster in clusters:
-			bash_script = "ssh %s 'mkdir %s'" % (cluster['name'], cluster['exp_results_from'])
-			print(bash_script)
-			myCmd = os.popen(bash_script).read()
-			print(myCmd)
-		
 		# code synchronize
 		if repo_url is not None:
 			for cluster in clusters:
@@ -62,6 +55,14 @@ class Submitter(object):
 				bash_script = "ssh %s 'if [ -d %s ]; then cd %s; git pull origin master; else cd %s; git clone %s %s; fi'" % (
 					cluster['name'], cluster['project_root_dir'], cluster['project_root_dir'], root_path, repo_url, project_name
 				)
+				print(bash_script)
+				myCmd = os.popen(bash_script).read()
+				print(myCmd)
+				
+		# make output_dir
+		for cluster in clusters:
+			for i in range(len(cluster['exp_results_from'])):
+				bash_script = "ssh %s 'mkdir -p %s'" % (cluster['name'], cluster['exp_results_from'][i])
 				print(bash_script)
 				myCmd = os.popen(bash_script).read()
 				print(myCmd)
