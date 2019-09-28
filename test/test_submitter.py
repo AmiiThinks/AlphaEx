@@ -8,7 +8,7 @@ def test_submitter():
 			'capacity': 1,
 			'project_root_dir': '/home/yiwan/projects/def-sutton/yiwan/AlphaEx',
 			'script_path': 'test/submit.sh',
-			'exp_results_from': ['/home/yiwan/projects/def-sutton/yiwan/AlphaEx/output'],
+			'exp_results_from': ['/home/yiwan/projects/def-sutton/yiwan/AlphaEx/test/output'],
 			'exp_results_to': ['./output']
 		},
 		# {
@@ -16,7 +16,7 @@ def test_submitter():
 		# 	'capacity': 2,
 		# 	'project_root_dir': '/home/yiwan/projects/def-sutton/yiwan/AlphaEx',
 		# 	'script_path': 'test/submit.sh',
-		# 	'exp_results_from': ['/home/yiwan/projects/def-sutton/yiwan/AlphaEx/output'],
+		# 	'exp_results_from': ['/home/yiwan/projects/def-sutton/yiwan/AlphaEx/test/output'],
 		# 	'exp_results_to': ['./output']
 		# },
 	]
