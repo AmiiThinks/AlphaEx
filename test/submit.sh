@@ -10,4 +10,5 @@ export OMP_NUM_THREADS=1
 mkdir -p output
 mkdir -p error
 
+echo sleep $((SLURM_ARRAY_TASK_ID / 10)) seconds
 sleep $((SLURM_ARRAY_TASK_ID / 10))

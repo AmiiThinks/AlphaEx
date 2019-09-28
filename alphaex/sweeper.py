@@ -34,7 +34,7 @@ class Sweeper(object):
 
     def parse(self, idx):
         rtn_dict = dict()
-        # rtn_dict['run'] = int(idx / self.total_combinations)
+        rtn_dict['run'] = int(idx / self.total_combinations)
         # rtn_dict['param_setting'] = idx % self.total_combinations
         
         self.parse_helper(idx, self.config_dict, rtn_dict)
