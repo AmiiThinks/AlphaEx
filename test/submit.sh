@@ -3,8 +3,8 @@
 #SBATCH --time=02:55:00
 #SBATCH --mem-per-cpu=1G
 #SBATCH --job-name submit.sh
-#SBATCH --output=output/submit_%a.txt
-#SBATCH --error=error/submit_%a.txt
+#SBATCH --output=test/output/submit_%a.txt
+#SBATCH --error=test/error/submit_%a.txt
 
 export OMP_NUM_THREADS=1
 
