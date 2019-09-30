@@ -1,5 +1,5 @@
 # AlphaEx
-AlphaEx (Alpha Experiment) is a python toolkit that helps you run a large number of experiments easily and efficiently.
+AlphaEx (Alpha Experiment) is a python toolkit that helps you manage large number of experiments easily and efficiently.
 
 With AlphaEx, you can:
 1. Run thousands of experiments on multiple computer clusters automatically, so that you can squeeze the most out of your computation resource.
@@ -117,18 +117,16 @@ if __name__ == '__main__':
 #SBATCH --time=02:55:00
 #SBATCH --mem-per-cpu=1G
 #SBATCH --job-name submit.sh
-#SBATCH --output=output/submit_%j.txt
-#SBATCH --error=error/submit_%j.txt
+#SBATCH --output=test/output/submit_%a.txt
+#SBATCH --error=test/error/submit_%a.txt
 
 export OMP_NUM_THREADS=1
-mkdir -p output
-mkdir -p error
 
-sleep $((SLURM_ARRAY_TASK_ID / 10))
+echo $SLURM_ARRAY_TASK_ID
 ```
 
-In this simple example, each job is just sleeping for some time. The sleeping time depends on the unique id of each job SLURM_ARRAY_TASK_ID.
-This ID will be assigned by submitter automatically.
+In this simple example, each job simply outputs its array job id.
+This id will be assigned by submitter automatically. The output will be written to `test/output/submit_<SLURM_ARRAY_TASK_ID>.txt`.
 
 Now run `python test/test_submitter.py` in the server. Since the total capacity of mp2 and cedar are less than the total number jobs you want to run,
  submitter can not submit all jobs to these two clusters at once.
@@ -137,6 +135,7 @@ After that, it will periodically check whether there is any submitted job finish
 And if there is any, the submitter will submit same number of new jobs as the finished ones until all 10 jobs are submitted.
 
 After all jobs are submitted, submitter will copy experiment results from a cluster to the server when the cluster finishes all jobs.
+And you can see your results in `test/output`
 
 ### Tips
 Since the server needs to  keep running a program to monitor job status and submit new jobs.
