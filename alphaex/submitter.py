@@ -1,3 +1,10 @@
+#######################################################################
+# Copyright (C) 2019 Yi Wan(wan6@ualberta.ca)                         #
+# Permission given to modify the code as long as you keep this        #
+# declaration at the top                                              #
+#######################################################################
+
+
 import os
 import time
 from pathlib import Path

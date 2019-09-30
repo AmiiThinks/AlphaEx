@@ -1,13 +1,19 @@
+#######################################################################
+# Copyright (C) 2019 Yi Wan(wan6@ualberta.ca)                         #
+# Permission given to modify the code as long as you keep this        #
+# declaration at the top                                              #
+#######################################################################
+
+
 from alphaex.sweeper import Sweeper
-import logging
 import os
 
 
 def test_sweeper():
 	cfg_dir = 'test/cfg'
-	log_dir = 'test/log'
 	sweep_file_name = 'variables.json'
 	num_runs = 10
+	# test Sweeper.parse
 	sweeper = Sweeper(os.path.join(cfg_dir, sweep_file_name))
 	for sweep_id in range(0, sweeper.total_combinations * num_runs):
 		rtn_dict = sweeper.parse(sweep_id)
@@ -25,21 +31,10 @@ def test_sweeper():
 			rtn_dict.get('param6', None)
 		)
 		print(report)
-		logger = logging.getLogger(str(sweep_id))
-		logger.setLevel(logging.INFO)
-		if not os.path.exists(os.path.join(log_dir, sweep_file_name)):
-			os.makedirs(os.path.join(log_dir, sweep_file_name))
-		log_file_path = os.path.join(log_dir, sweep_file_name, str(sweep_id) + '.txt')
-		if os.path.exists(log_file_path):
-			os.remove(log_file_path)
-		fh = logging.FileHandler(log_file_path)
-		fh.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s: %(message)s'))
-		fh.setLevel(logging.INFO)
-		logger.addHandler(fh)
-		for _ in range(100):
-			logger.info(report)
-		fh.close()
-		
+	
+	# test Sweeper.search
+	print(sweeper.search({'param1': 'param1_3', 'param4': True}, num_runs))
+	
 
 if __name__ == '__main__':
 	test_sweeper()

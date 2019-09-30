@@ -1,3 +1,10 @@
+#######################################################################
+# Copyright (C) 2019 Yi Wan(wan6@ualberta.ca)                         #
+# Permission given to modify the code as long as you keep this        #
+# declaration at the top                                              #
+#######################################################################
+
+
 import json
 
 
@@ -77,3 +84,41 @@ class Sweeper(object):
                 return value, idx - num_values
             num_values += temp
         return num_values
+
+    def search(self, search_dict, num_runs):
+        """
+            For any key in self.config_dict, if search_dict also has the key, use the corresponding value.
+            Otherwise enumerate all values that key could take according to self.config_dict file.
+            In addition, for each variable combination, list id corresponding to each run.
+            For example, suppose self.total_combinations = 10 and we want to list ids corresponding to 4 runs, then
+            the 5th variable combination corresponds to a 4-element list of ids [5, 15, 25, 35].
+            :param
+                cfg: choose parameter settings according to cfg. Parameters in cfg can only take one value.
+                num_runs: number of runs
+            :return: a list of combinations of variables.
+		"""
+        
+        param_setting_list = []
+    
+        for idx in range(self.total_combinations):
+    
+            temp_dict = self.parse(idx)
+            
+            valid_temp_dict = True
+            for key, value in search_dict.items():
+                if key not in temp_dict:
+                    valid_temp_dict = False
+                    break
+            
+            if valid_temp_dict is False:
+                continue
+
+            param_setting_list.append({'ids': [idx + run * self.total_combinations for run in range(num_runs)]})
+                
+            for key, value in temp_dict.items():
+                if key in search_dict and search_dict[key] != value:
+                    param_setting_list = param_setting_list[:-1]
+                    break
+                param_setting_list[-1][key] = value
+    
+        return param_setting_list

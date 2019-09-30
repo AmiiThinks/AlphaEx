@@ -35,7 +35,7 @@ different restrictions on the number of jos submitted.
 Submitter automatically submits all jobs for you in a simple way.
 Here is how it works.
 
-1. Synchronize project code from git repo (optional).
+1. Synchronize project code from git repo. This step is optional. Users may choose to manually upload project code to clusters.
 <p><img src="./images/submitter_1.png" alt="test" width="300" height="400"></p>
 
 2. Submit jobs to each cluster. The number of jobs in each cluster will be the cluster's capacity.
@@ -136,7 +136,7 @@ Instead, it will submit array jobs with array indices 0-2 to cluster mp2, and su
 After that, it will periodically check whether there is any submitted job finishes.
 And if there is any, the submitter will submit same number of new jobs as the finished ones until all 10 jobs are submitted.
 
-After all jobs are submitted, copy experiment results from a cluster to the server when the cluster finishes all jobs.
+After all jobs are submitted, submitter will copy experiment results from a cluster to the server when the cluster finishes all jobs.
 
 ### Tips
 Since the server needs to  keep running a program to monitor job status and submit new jobs.
@@ -219,10 +219,20 @@ param5: param5_1
 param6: True
 ```
 
-Sweeper can generate all different combinations of variables. test/test_sweeper.py is an example of using it.
+Sweeper has two useful methods:
 
-## Acknowledgement
-This project was inspired by Muhammad Zaheer's sweeper code.
+The `parse` method generates a combinations of variables, given its corresponding index `idx`.
+This method can be used for sweeping all different combinations of variables.
+
+The `search` method takes `search_dict` and `num_runs` as input.
+`search_dict` is a dictionary including some variables whose values are specified by the user. Search method
+generates a list which includes variables and their values in `search_dict` and all combinations of unspecified variables.
+In addition, for each combination of variables, a corresponding list of indices corresponding to
+such combination will be generated.
+This method can be used for post-processing. For example, after getting all experiment results.
+The user may use this method to search all results related to `search_dict`.
+
+test/test_sweeper.py is an example of using it.
 
 ## Citation
 Please use the bibtex if you want to cite this repo

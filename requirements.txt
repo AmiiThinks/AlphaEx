@@ -1,3 +1,2 @@
-matplotlib==3.1.0
 json==2.0.9
 numpy==1.16.4
