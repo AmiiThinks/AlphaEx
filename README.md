@@ -2,19 +2,17 @@
 AlphaEx (Alpha Experiment) is a python toolkit that helps you run a large number of experiments easily and efficiently.
 
 With AlphaEx, you can:
-1. Run thousands of experiments on multiple computer clusters automatically, so that you can squeeze the most of your computation hardware.
-2. Sweep experiment variables in a simple effective way. Just define a json file and do your sweeps with one click.
+1. Run thousands of experiments on multiple computer clusters automatically, so that you can squeeze the most out of your computation resource.
+2. Sweep experiment variables in a simple effective way. Just define a json file and do all sweeps with one click.
 
 The above 2 functions are implemented in 2 self-contained python scripts
 `submitter.py`, `sweeper.py`.
 
 **Warning**:
 
-Sweeper can be used in any machine with python installed. But submitter
-currently is only compatible with **slurm**. Make sure you have access to
-at least one cluster which has slurm installed. For example, I
-have an account on compute canada, so I can use clusters including
-cedar, mp2, etc.
+Sweeper can be used in any machine with python installed. But submitter is only compatible with **slurm** currently.
+Make sure you have access to at least one cluster which has slurm installed. For example, I
+have an account on compute canada, so I can use clusters including cedar, mp2, etc.
 
 To test these 2 modules, run
 `python test/test_submitter.py`, `python test/test_sweeper.py`
@@ -24,7 +22,6 @@ with you own setting. Please refer to the next section.)
 ## Dependencies
 1. python 3.7
 2. numpy
-2. matplotlib
 3. json
 
 ## Submitter
@@ -41,26 +38,26 @@ Here is how it works.
 1. Synchronize project code from git repo (optional).
 <p><img src="./images/submitter_1.png" alt="test" width="300" height="400"></p>
 
-2. Submit maximum number of jobs as you want to each cluster (but not exceeding the max number of jobs allowed)
+2. Submit jobs to each cluster. The number of jobs in each cluster will be the cluster's capacity.
 <p><img src="./images/submitter_2.png" alt="test" width="300" height="300"></p>
 
-3. Periodically check if there are jobs finished
+3. Monitor clusters to see if there are jobs finished
 <p><img src="./images/submitter_3.png" alt="test" width="300" height="300"></p>
 
-4. If there is any, submit same number of new jobs as the finished ones until all jobs are submitted.
+4. If there are any, submit same number of new jobs as the finished ones until all jobs are submitted.
 <p><img src="./images/submitter_4.png" alt="test" width="300" height="300"></p>
 
 5. When all jobs are finished, copy experiment results from clusters to the server
-<p><img src="./images/submitter_5.png" alt="test" width="300" height="250"></p>
+<p><img src="./images/submitter_5.png" alt="test" width="300" height="230"></p>
 
 ### How to Use Submitter
 To use submitter, you need to first have automatic ssh access to clusters from the server,
-so that every time when you ssh to a cluster, just type in `ssh <cluster name>`
-without entering the full url, your username and password.
+so that whenever you ssh to a cluster, just type in `ssh <cluster name>`
+without entering the full url, your username and your password.
 
 #### Ssh Automation
 
-The next 3 steps help you do this. In your server's home directory:
+The next 3 steps help you do this. In your server's home directory, execute:
 
 1. `ssh-keygen`
 2. `ssh-copy-id <username>@<cluster url>`
@@ -75,7 +72,7 @@ Host <cluster name>
     HostName <cluster url>
     User <username>
 ```
-Next time when you want to add a new cluster, just do step 2 and step 3.
+Next time when you want to add a new cluster, just repeat step 2 and step 3.
 
 #### Example
 Now you can use submitter. test/test_submitter.py is a good example to start with.
@@ -90,18 +87,21 @@ def test_submitter():
             'name': 'mp2',
             'capacity': 3,
             'project_root_dir': '/home/yiwan/projects/def-sutton/yiwan/AlphaEx',
-            'script_path': 'test/submit.sh'
+            'exp_results_from': ['/home/yiwan/projects/def-sutton/yiwan/AlphaEx/test/output', '/home/yiwan/projects/def-sutton/yiwan/AlphaEx/test/error'],
+            'exp_results_to': ['test/output', 'test/error']
         },
         {
             'name': 'cedar',
             'capacity': 2,
             'project_root_dir': '/home/yiwan/projects/def-sutton/yiwan/AlphaEx',
-            'script_path': 'test/submit.sh'
+            'exp_results_from': ['/home/yiwan/projects/def-sutton/yiwan/AlphaEx/test/output', '/home/yiwan/projects/def-sutton/yiwan/AlphaEx/test/error'],
+            'exp_results_to': ['test/output', 'test/error']
         },
     ]
     num_jobs = 10
-    repo_address = "https://github.com/yiwan-rl/AlphaEx.git"
-    submitter = Submitter(clusters, num_jobs, repo_address=repo_address)
+    repo_url = "https://github.com/yiwan-rl/AlphaEx.git"
+    script_path = "test/submit.sh"
+    submitter = Submitter(clusters, num_jobs, script_path, repo_url=repo_url)
     submitter.submit()
 
 
@@ -136,12 +136,11 @@ Instead, it will submit array jobs with array indices 0-2 to cluster mp2, and su
 After that, it will periodically check whether there is any submitted job finishes.
 And if there is any, the submitter will submit same number of new jobs as the finished ones until all 10 jobs are submitted.
 
-### Experiment Results
-User needs to manually copy results from
+After all jobs are submitted, copy experiment results from a cluster to the server when the cluster finishes all jobs.
 
 ### Tips
-Since the server always needs keep running a program to monitor job status and submit new jobs.
-It may not be a good idea to use user's own laptop as the server because the laptop might not always have the internet connection.
+Since the server needs to  keep running a program to monitor job status and submit new jobs.
+It may not be a good idea to use user's own laptop as the server because the laptop might not always have internet connection.
 My suggestion is to use one cluster as the server and use program like screen to make
 sure the monitor program runs in the background even if the user logout from the server.
 
