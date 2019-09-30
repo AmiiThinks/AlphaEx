@@ -17,7 +17,7 @@ have an account on compute canada, so I can use clusters including cedar, mp2, e
 To test these 2 modules, run
 `python test/test_submitter.py`, `python test/test_sweeper.py`
  (submitter needs to be configured first
-with you own setting. Please refer to the next section.)
+with you own setting. Please refer to later sections.)
 
 ## Dependencies
 1. python 3.7
@@ -241,7 +241,7 @@ Please use the bibtex if you want to cite this repo
   year = {2019},
   publisher = {GitHub},
   journal = {GitHub Repository},
-  howpublished = {\url{https://github.com/umichyiwan/AlphaEx}},
+  howpublished = {\url{https://github.com/yiwan-rl/AlphaEx}},
 }
 ```
 
