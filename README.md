@@ -230,7 +230,7 @@ such combination will be generated.
 This method can be used for post-processing. For example, after getting all experiment results.
 The user may use this method to search all results related to `search_dict`.
 
-test/test_sweeper.py is an example of using it.
+test/test_sweeper.py is an example of using these two methods.
 
 ## Citation
 Please use the bibtex if you want to cite this repo
