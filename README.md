@@ -2,15 +2,15 @@
 AlphaEx (Alpha Experiment) is a python toolkit that helps you manage large number of experiments easily and efficiently.
 
 With AlphaEx, you can:
-1. Run thousands of experiments on multiple computer clusters automatically, so that you can squeeze the most out of your computation resource.
-2. Sweep experiment variables in a simple effective way. Just define a json file and do all sweeps with one click.
+1. Run multiple experiments on multiple computer clusters automatically.
+2. Sweep experiment variables in a simple efficient way. Just define a json file and do all sweeps with one click.
 
 The above 2 functions are implemented in 2 self-contained python scripts
 `submitter.py`, `sweeper.py`.
 
 **Warning**:
 
-Sweeper can be used in any machine with python installed. But submitter is only compatible with **slurm** currently.
+Sweeper can be used in any machine with python installed. But submitter is only compatible with **slurm**.
 Make sure you have access to at least one cluster which has slurm installed. For example, I
 have an account on compute canada, so I can use clusters including cedar, mp2, etc.
 
@@ -27,11 +27,11 @@ with you own setting. Please refer to the next section.)
 ## Submitter
 
 ### What is Submitter
-Think about the case when you have 1000 jobs to run and 3 computer clusters to available.
+Think about the case when you have 1000 jobs to run and 3 computer clusters available.
 It is not easy to manually assign jobs to clusters in an effective way.
 One reason is each computer cluster has different performance.
-Some may be faster than other. The other reason is each cluster may have
-different restrictions on the number of jos submitted.
+Some may be faster than other. The other reason is clusters may have
+different restriction on the number of jobs submitted.
 Submitter automatically submits all jobs for you in a simple way.
 Here is how it works.
 
@@ -125,20 +125,20 @@ export OMP_NUM_THREADS=1
 echo $SLURM_ARRAY_TASK_ID
 ```
 
-In this simple example, each job simply outputs its array job id.
+In this simple example, each job outputs its array job id.
 This id will be assigned by submitter automatically. The output will be written to `test/output/submit_<SLURM_ARRAY_TASK_ID>.txt`.
 
 Now run `python test/test_submitter.py` in the server. Since the total capacity of mp2 and cedar are less than the total number jobs you want to run,
  submitter can not submit all jobs to these two clusters at once.
 Instead, it will submit array jobs with array indices 0-2 to cluster mp2, and submit array jobs 3-4 to cluster cedar.
-After that, it will periodically check whether there is any submitted job finishes.
-And if there is any, the submitter will submit same number of new jobs as the finished ones until all 10 jobs are submitted.
+After that, it will monitor whether there are any submitted jobs finished.
+And if there are any, the submitter will submit same number of new jobs as the finished ones until all 10 jobs are submitted.
 
 After all jobs are submitted, submitter will copy experiment results from a cluster to the server when the cluster finishes all jobs.
 And you can see your results in `test/output`
 
 ### Tips
-Since the server needs to  keep running a program to monitor job status and submit new jobs.
+Since the server needs to keep running a program to monitor job status and submit new jobs.
 It may not be a good idea to use user's own laptop as the server because the laptop might not always have internet connection.
 My suggestion is to use one cluster as the server and use program like screen to make
 sure the monitor program runs in the background even if the user logout from the server.
@@ -199,11 +199,10 @@ To use sweeper, first define a json file which specifies all the combinations of
 }
 ```
 
-**Three principles of Writing This File are:**
-1. The json file should start from dictionary, not list
-2. List and dictionary should be nested in alternative way
+**Three principles of writing this file are:**
+1. The file should start with a dictionary, not a list
+2. Lists and dictionaries should be nested in an alternative way
 3. Each combination of variables takes only one element from every list, and takes all elements from every dictionary.
-
 
 In our example, a legitimate combination of variables is
 
@@ -224,8 +223,8 @@ The `parse` method generates a combinations of variables, given its correspondin
 This method can be used for sweeping all different combinations of variables.
 
 The `search` method takes `search_dict` and `num_runs` as input.
-`search_dict` is a dictionary including some variables whose values are specified by the user. Search method
-generates a list which includes variables and their values in `search_dict` and all combinations of unspecified variables.
+`search_dict` is a dictionary including some keywords (variables) and their values. Search method
+generates a list which includes keywords and their values in `search_dict` and all combinations of unspecified variables.
 In addition, for each combination of variables, a corresponding list of indices corresponding to
 such combination will be generated.
 This method can be used for post-processing. For example, after getting all experiment results.

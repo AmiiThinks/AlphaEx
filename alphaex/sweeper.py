@@ -42,7 +42,6 @@ class Sweeper(object):
     def parse(self, idx):
         rtn_dict = dict()
         rtn_dict['run'] = int(idx / self.total_combinations)
-        # rtn_dict['param_setting'] = idx % self.total_combinations
         
         self.parse_helper(idx, self.config_dict, rtn_dict)
         
@@ -93,12 +92,12 @@ class Sweeper(object):
             For example, suppose self.total_combinations = 10 and we want to list ids corresponding to 4 runs, then
             the 5th variable combination corresponds to a 4-element list of ids [5, 15, 25, 35].
             :param
-                cfg: choose parameter settings according to cfg. Parameters in cfg can only take one value.
+                search_dict: a dictionary containing key words
                 num_runs: number of runs
-            :return: a list of combinations of variables.
+            :return: the search result, a list of combinations of variables related to the key words
 		"""
         
-        param_setting_list = []
+        search_result_list = []
     
         for idx in range(self.total_combinations):
     
@@ -113,12 +112,12 @@ class Sweeper(object):
             if valid_temp_dict is False:
                 continue
 
-            param_setting_list.append({'ids': [idx + run * self.total_combinations for run in range(num_runs)]})
+            search_result_list.append({'ids': [idx + run * self.total_combinations for run in range(num_runs)]})
                 
             for key, value in temp_dict.items():
                 if key in search_dict and search_dict[key] != value:
-                    param_setting_list = param_setting_list[:-1]
+                    search_result_list = search_result_list[:-1]
                     break
-                param_setting_list[-1][key] = value
+                search_result_list[-1][key] = value
     
-        return param_setting_list
+        return search_result_list
