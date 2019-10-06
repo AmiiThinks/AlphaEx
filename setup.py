@@ -16,8 +16,5 @@ setup(
     author_email='wan6@ualberta.ca',
     url='https://github.com/yiwan-rl/AlphaEx',
     license=license,
-    packages=find_packages(exclude=('test')),
-    install_requires=[
-        'json', 'numpy'
-    ]
+    packages=find_packages(exclude=('test'))
 )

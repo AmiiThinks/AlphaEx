@@ -22,7 +22,6 @@ with you own setting. Please refer to later sections.)
 ## Dependencies
 1. python 3.7
 2. numpy
-3. json
 
 ## Submitter
 
