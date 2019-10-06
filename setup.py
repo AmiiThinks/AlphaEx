@@ -13,11 +13,11 @@ setup(
     description='AlphaEx: A Python Toolkit for Managing Large Number of Experiments',
     long_description=readme,
     author='Yi Wan',
-    author_email='umichyiwan@gmail.com',
-    url='https://github.com/umichyiwan/experimenter',
+    author_email='wan6@ualberta.ca',
+    url='https://github.com/yiwan-rl/AlphaEx',
     license=license,
     packages=find_packages(exclude=('test')),
     install_requires=[
-        'matplotlib'
+        'json', 'numpy'
     ]
 )
