@@ -124,6 +124,10 @@ export OMP_NUM_THREADS=1
 echo $SLURM_ARRAY_TASK_ID
 ```
 
+#### Optional arguments
+
+Submitter takes an optional argument for the configuration file. If the user wants to provide this argument then refer to it in the submission script like this `${CONFIG_FILE}`.
+
 In this simple example, each job outputs its array job id.
 This id will be assigned by submitter automatically. The output will be written to `test/output/submit_<SLURM_ARRAY_TASK_ID>.txt`.
 
