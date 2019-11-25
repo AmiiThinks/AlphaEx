@@ -124,10 +124,6 @@ export OMP_NUM_THREADS=1
 echo $SLURM_ARRAY_TASK_ID
 ```
 
-#### Optional arguments
-
-Submitter takes an optional argument for the configuration file. If the user wants to provide this argument then refer to it in the submission script like this `${CONFIG_FILE}`.
-
 In this simple example, each job outputs its array job id.
 This id will be assigned by submitter automatically. The output will be written to `test/output/submit_<SLURM_ARRAY_TASK_ID>.txt`.
 
@@ -139,6 +135,10 @@ And if there are any, the submitter will submit same number of new jobs as the f
 
 After all jobs are submitted, submitter will copy experiment results from a cluster to the server when the cluster finishes all jobs.
 And you can see your results in `test/output`
+
+#### Optional arguments
+
+Submitter takes an optional argument for the configuration file. If the user wants to provide this argument then refer to it in the submission script like this `${CONFIG_FILE}`.
 
 ### Tips
 Since the server needs to keep running a program to monitor job status and submit new jobs.
