@@ -17,6 +17,11 @@ class Submitter(object):
         total_num_jobs (int): total number of jobs to run
         script_path (str): the slurm array job submission script in the experiment
         project
+        export_params (dict): optional keyword-value arguments that user can provide
+        to slurm other than slurm environment variables.
+        Note that in the slurm shell script those arguments must match with the keys
+        of this dictionary (for details on slurm `--export`check
+        https://slurm.schedmd.com/sbatch.html)
         duration_between_two_polls (int): duration between two polls in seconds.
         Default value is 60.
         repo_url (str): experiment code's git repo url. If this is not provide,
@@ -51,7 +56,7 @@ class Submitter(object):
         clusters,
         total_num_jobs,
         script_path,
-        config_file,
+        export_params={},
         duration_between_two_polls=60,
         repo_url=None,
     ):
@@ -126,20 +131,21 @@ class Submitter(object):
         self.total_num_jobs = total_num_jobs
         self.script_path = script_path
         self.duration_between_two_polls = duration_between_two_polls
-        self.config_file = config_file
+        self.export_params = export_params
 
     def submit_jobs(self, num_jobs, cluster_name, project_root_dir):
+
+        arg_export = [f"{k}={v}" for k, v in self.export_params.items()]
+        arg_export = ",".join(arg_export)
+
         bash_script = (
-            "ssh %s 'cd %s; sbatch --array=%d-%d --export=CONFIG_FILE=%s %s'"
-            % (
-                cluster_name,
-                project_root_dir,
-                self.starting_job_num,
-                self.starting_job_num + num_jobs - 1,
-                self.config_file,
-                self.script_path,
-            )
+            f"ssh {cluster_name} "
+            f"'cd {project_root_dir}; "
+            f"sbatch --array={self.starting_job_num}-{self.starting_job_num + num_jobs - 1} "
+            f"--export={arg_export} "
+            f"{self.script_path}'"
         )
+
         print(bash_script)
         myCmd = os.popen(bash_script).read()
         print(myCmd)
