@@ -32,7 +32,16 @@ def test_submitter():
     num_jobs = 10
     repo_url = "https://github.com/yiwan-rl/AlphaEx.git"
     script_path = "test/submit.sh"
-    submitter = Submitter(clusters, num_jobs, script_path, repo_url=repo_url)
+    submitter = Submitter(
+        clusters,
+        num_jobs,
+        script_path,
+        export_params={
+            "python_module": "test.my_experiment_entrypoint",
+            "config_file": "test/cfg/variables.json",
+        },
+        repo_url=repo_url,
+    )
     submitter.submit()
 
 

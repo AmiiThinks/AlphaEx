@@ -17,11 +17,8 @@ class Submitter(object):
         total_num_jobs (int): total number of jobs to run
         script_path (str): the slurm array job submission script in the experiment
         project
-        export_params (dict): optional keyword-value arguments that user can provide
-        to slurm other than slurm environment variables.
-        Note that in the slurm shell script those arguments must match with the keys
-        of this dictionary (for details on slurm `--export`check
-        https://slurm.schedmd.com/sbatch.html)
+        export_params (dict): containing arguments and their respective values
+            that can be passed to slurm jobs.
         duration_between_two_polls (int): duration between two polls in seconds.
         Default value is 60.
         repo_url (str): experiment code's git repo url. If this is not provide,
