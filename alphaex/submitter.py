@@ -34,6 +34,8 @@ class Submitter(object):
 
     capacity (int): maximum number of jobs you want to run in that cluster, usually
     each cluster provides this information in its user manuel.
+    
+    account (str): the account name, for example, def-sutton, rrg-whitem.
 
     project_root_dir (str): the root directory containing the project in the cluster.
     If repo_url is not None, then submitter
@@ -58,7 +60,7 @@ class Submitter(object):
         repo_url=None,
     ):
         # sanity check
-        required_members = ["name", "capacity", "project_root_dir"]
+        required_members = ["name", "capacity", "account", "project_root_dir"]
         for cluster in clusters:
             for member in required_members:
                 if member not in cluster:
@@ -86,7 +88,7 @@ class Submitter(object):
                 cluster["exp_results_from"] = []
                 cluster["exp_results_to"] = []
 
-                # code synchronize
+        # code synchronize
         if repo_url is not None:
             for cluster in clusters:
                 root_path = "/".join(cluster["project_root_dir"].split("/")[:-1])
@@ -107,7 +109,7 @@ class Submitter(object):
                 myCmd = os.popen(bash_script).read()
                 print(myCmd)
 
-                # make output_dir
+        # make output_dir
         for cluster in clusters:
             for i in range(len(cluster["exp_results_from"])):
                 bash_script = "ssh %s 'mkdir -p %s'" % (
@@ -130,7 +132,7 @@ class Submitter(object):
         self.duration_between_two_polls = duration_between_two_polls
         self.export_params = export_params
 
-    def submit_jobs(self, num_jobs, cluster_name, project_root_dir):
+    def submit_jobs(self, num_jobs, cluster_name, account, project_root_dir):
 
         arg_export = [f"{k}={v}" for k, v in self.export_params.items()]
         arg_export = ",".join(arg_export)
@@ -138,7 +140,7 @@ class Submitter(object):
         bash_script = (
             f"ssh {cluster_name} "
             f"'cd {project_root_dir}; "
-            f"sbatch --array={self.starting_job_num}-{self.starting_job_num + num_jobs - 1} "
+            f"sbatch --array={self.starting_job_num}-{self.starting_job_num + num_jobs - 1} --account={account} "
             f"--export={arg_export} "
             f"{self.script_path}'"
         )
@@ -211,7 +213,8 @@ class Submitter(object):
                             self.total_num_jobs - self.starting_job_num,
                         ),
                         cluster["name"],
-                        cluster["project_root_dir"],
+                        cluster["account"],
+                        cluster["project_root_dir"]
                     )
                     if finish_submitting:
                         print("Finish submitting all jobs!")

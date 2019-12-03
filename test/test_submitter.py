@@ -11,6 +11,7 @@ def test_submitter():
         {
             "name": "mp2",
             "capacity": 3,
+            "account": "def-sutton",
             "project_root_dir": "/home/yiwan/projects/def-sutton/yiwan/AlphaEx",
             "exp_results_from": [
                 "/home/yiwan/projects/def-sutton/yiwan/AlphaEx/test/output",
@@ -21,6 +22,7 @@ def test_submitter():
         {
             "name": "cedar",
             "capacity": 2,
+            "account": "def-sutton",
             "project_root_dir": "/home/yiwan/projects/def-sutton/yiwan/AlphaEx",
             "exp_results_from": [
                 "/home/yiwan/projects/def-sutton/yiwan/AlphaEx/test/output",
@@ -38,7 +40,7 @@ def test_submitter():
         script_path,
         export_params={
             "python_module": "test.my_experiment_entrypoint",
-            "config_file": "test/cfg/variables.json",
+            "config_file": "test/cfg/variables.json"
         },
         repo_url=repo_url,
     )

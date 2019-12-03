@@ -2,3 +2,4 @@
 test/log
 test/plot
 /.idea/
+.python-version
