@@ -83,24 +83,39 @@ from alphaex.submitter import Submitter
 def test_submitter():
     clusters = [
         {
-            'name': 'mp2',
-            'capacity': 3,
-            'project_root_dir': '/home/yiwan/projects/def-sutton/yiwan/AlphaEx',
-            'exp_results_from': ['/home/yiwan/projects/def-sutton/yiwan/AlphaEx/test/output', '/home/yiwan/projects/def-sutton/yiwan/AlphaEx/test/error'],
-            'exp_results_to': ['test/output', 'test/error']
+            "name": "mp2",
+            "capacity": 3,
+            "project_root_dir": "/home/yiwan/projects/def-sutton/yiwan/AlphaEx",
+            "exp_results_from": [
+                "/home/yiwan/projects/def-sutton/yiwan/AlphaEx/test/output",
+                "/home/yiwan/projects/def-sutton/yiwan/AlphaEx/test/error",
+            ],
+            "exp_results_to": ["test/output", "test/error"],
         },
         {
-            'name': 'cedar',
-            'capacity': 2,
-            'project_root_dir': '/home/yiwan/projects/def-sutton/yiwan/AlphaEx',
-            'exp_results_from': ['/home/yiwan/projects/def-sutton/yiwan/AlphaEx/test/output', '/home/yiwan/projects/def-sutton/yiwan/AlphaEx/test/error'],
-            'exp_results_to': ['test/output', 'test/error']
+            "name": "cedar",
+            "capacity": 2,
+            "project_root_dir": "/home/yiwan/projects/def-sutton/yiwan/AlphaEx",
+            "exp_results_from": [
+                "/home/yiwan/projects/def-sutton/yiwan/AlphaEx/test/output",
+                "/home/yiwan/projects/def-sutton/yiwan/AlphaEx/test/error",
+            ],
+            "exp_results_to": ["test/output", "test/error"],
         },
     ]
-    num_jobs = 10
+    num_jobs = 5
     repo_url = "https://github.com/yiwan-rl/AlphaEx.git"
     script_path = "test/submit.sh"
-    submitter = Submitter(clusters, num_jobs, script_path, repo_url=repo_url)
+    submitter = Submitter(
+        clusters,
+        num_jobs,
+        script_path,
+        export_params={
+            "python_module": "test.my_experiment_entrypoint",
+            "config_file": "test/cfg/variables.json",
+        },
+        repo_url=repo_url,
+    )
     submitter.submit()
 
 
@@ -108,12 +123,12 @@ if __name__ == '__main__':
     test_submitter()
 ```
 
-`test/submit.sh` is an example of the array job submission script, please refer to the user manual of slurm if you don't understand the following script.
+`test/submit.sh` is an example of the array job submission script (For more details on slurm, please refer to the [user manual](https://slurm.schedmd.com/).
 
 ```
 #!/bin/bash
 
-#SBATCH --time=02:55:00
+#SBATCH --time=00:10:00
 #SBATCH --mem-per-cpu=1G
 #SBATCH --job-name submit.sh
 #SBATCH --output=test/output/submit_%a.txt
@@ -121,13 +136,17 @@ if __name__ == '__main__':
 
 export OMP_NUM_THREADS=1
 
-echo $SLURM_ARRAY_TASK_ID
+module load python/3.6
+
+echo "${python_module}" "${SLURM_ARRAY_TASK_ID}" "${config_file}"
+python -m "${python_module}" "${SLURM_ARRAY_TASK_ID}" "${config_file}"
+
 ```
 
-In this simple example, each job outputs its array job id.
 This id will be assigned by submitter automatically. The output will be written to `test/output/submit_<SLURM_ARRAY_TASK_ID>.txt`.
+In this simple example, each job outputs the `SLURM_ARRAY_TASK_ID` and the configuration filename `variables.json`.
 
-Now run `python test/test_submitter.py` in the server. Since the total capacity of mp2 and cedar are less than the total number jobs you want to run,
+From this project root directory run `python -m test.test_submitter` in the server. Since the total capacity of mp2 and cedar are less than the total number jobs you want to run,
  submitter can not submit all jobs to these two clusters at once.
 Instead, it will submit array jobs with array indices 0-2 to cluster mp2, and submit array jobs 3-4 to cluster cedar.
 After that, it will monitor whether there are any submitted jobs finished.
@@ -135,6 +154,7 @@ And if there are any, the submitter will submit same number of new jobs as the f
 
 After all jobs are submitted, submitter will copy experiment results from a cluster to the server when the cluster finishes all jobs.
 And you can see your results in `test/output`
+
 
 ### Tips
 Since the server needs to keep running a program to monitor job status and submit new jobs.
