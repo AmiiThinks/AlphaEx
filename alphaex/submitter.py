@@ -16,14 +16,18 @@ class Submitter(object):
         clusters (list): clusters information
         total_num_jobs (int): total number of jobs to run
         script_path (str): the slurm array job submission script in the experiment
-        project
+            project
         export_params (dict): containing arguments and their respective values
             that can be passed to slurm jobs.
+        sbatch_params (dict): containing SBATCH arguments and
+            their respective values that can be passed to slurm jobs. Alternatively,
+            these arguments can be passed in the slurm script at the top of the file,
+            e.g. '#SBATCH --time=00:10:00'. See the sbatch documentation
+            for more details https://slurm.schedmd.com/sbatch.html)
         duration_between_two_polls (int): duration between two polls in seconds.
-        Default value is 60.
+            Default value is 60.
         repo_url (str): experiment code's git repo url. If this is not provide,
-        the user needs to copy experiment code
-        to each cluster manually.
+            the user needs to copy experiment code to each cluster manually.
 
     The clusters information is stored in a list of dictionaries.
 
@@ -33,8 +37,8 @@ class Submitter(object):
     of the server.
 
     capacity (int): maximum number of jobs you want to run in that cluster, usually
-    each cluster provides this information in its user manuel.
-    
+    each cluster provides this information in its user manual.
+
     account (str): the account name, for example, def-sutton, rrg-whitem.
 
     project_root_dir (str): the root directory containing the project in the cluster.
@@ -56,6 +60,7 @@ class Submitter(object):
         total_num_jobs,
         script_path,
         export_params={},
+        sbatch_params={},
         duration_between_two_polls=60,
         repo_url=None,
     ):
@@ -131,19 +136,26 @@ class Submitter(object):
         self.script_path = script_path
         self.duration_between_two_polls = duration_between_two_polls
         self.export_params = export_params
+        self.sbatch_params = sbatch_params
 
     def submit_jobs(self, num_jobs, cluster_name, account, project_root_dir):
 
-        arg_export = [f"{k}={v}" for k, v in self.export_params.items()]
-        arg_export = ",".join(arg_export)
+        arg_export = ",".join([f"{k}={v}" for k, v in self.export_params.items()])
+        arg_opt_sbatch = " ".join([f"--{k} {v}" for k, v in self.sbatch_params.items()])
 
         bash_script = (
             f"ssh {cluster_name} "
             f"'cd {project_root_dir}; "
-            f"sbatch --array={self.starting_job_num}-{self.starting_job_num + num_jobs - 1} --account={account} "
+            f"sbatch "
+            f"--array={self.starting_job_num}-{self.starting_job_num + num_jobs - 1} "
+            f"--account={account} "
+            f"{arg_opt_sbatch} "
             f"--export={arg_export} "
             f"{self.script_path}'"
         )
+
+        # remove multiple spaces
+        bash_script = " ".join(bash_script.split())
 
         print(bash_script)
         myCmd = os.popen(bash_script).read()
@@ -214,7 +226,7 @@ class Submitter(object):
                         ),
                         cluster["name"],
                         cluster["account"],
-                        cluster["project_root_dir"]
+                        cluster["project_root_dir"],
                     )
                     if finish_submitting:
                         print("Finish submitting all jobs!")
