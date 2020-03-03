@@ -40,7 +40,12 @@ def test_submitter():
         script_path,
         export_params={
             "python_module": "test.my_experiment_entrypoint",
-            "config_file": "test/cfg/variables.json"
+            "config_file": "test/cfg/variables.json",
+        },
+        sbatch_params={
+            "time": "00:10:00",
+            "mem-per-cpu": "1G",
+            "job-name": script_path.split("/")[1],
         },
         repo_url=repo_url,
     )
