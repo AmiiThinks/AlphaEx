@@ -314,7 +314,7 @@ Please use the bibtex if you want to cite this repo
 ```
 @misc{alphaex,
   author = {Yi, Wan},
-  title = {AlphaEx: A Python Toolkit for Managing Large Number of Experiments},
+  title = {AlphaEx: A Python Toolkit for Managing a Large Number of Experiments},
   year = {2019},
   publisher = {GitHub},
   journal = {GitHub Repository},
