@@ -1,4 +1,5 @@
-# AlphaEx
+<p><img src="./images/alphaex_logo.jpg" alt="test" width="200" height="200"></p>
+
 AlphaEx (Alpha Experiment) is a python toolkit that helps you manage large number of experiments easily and efficiently.
 
 With AlphaEx, you can:
