@@ -83,8 +83,9 @@ from alphaex.submitter import Submitter
 def test_submitter():
     clusters = [
         {
-            "name": "mp2",
+            "name": "cedar",
             "capacity": 3,
+            "account": "def-sutton",
             "project_root_dir": "/home/yiwan/projects/def-sutton/yiwan/AlphaEx",
             "exp_results_from": [
                 "/home/yiwan/projects/def-sutton/yiwan/AlphaEx/test/output",
@@ -93,8 +94,9 @@ def test_submitter():
             "exp_results_to": ["test/output", "test/error"],
         },
         {
-            "name": "cedar",
-            "capacity": 2,
+            "name": "mp2",
+            "capacity": 3,
+            "account": "def-sutton",
             "project_root_dir": "/home/yiwan/projects/def-sutton/yiwan/AlphaEx",
             "exp_results_from": [
                 "/home/yiwan/projects/def-sutton/yiwan/AlphaEx/test/output",
@@ -102,46 +104,55 @@ def test_submitter():
             ],
             "exp_results_to": ["test/output", "test/error"],
         },
+
     ]
-    num_jobs = 5
+    job_list = [(1, 4), 6, (102, 105), 100, (8, 12), 107]
     repo_url = "https://github.com/yiwan-rl/AlphaEx.git"
     script_path = "test/submit.sh"
     submitter = Submitter(
         clusters,
-        num_jobs,
+        job_list,
         script_path,
         export_params={
             "python_module": "test.my_experiment_entrypoint",
             "config_file": "test/cfg/variables.json",
         },
+        sbatch_params={
+            "time": "00:10:00",
+            "mem-per-cpu": "1G",
+            "job-name": script_path.split("/")[1],
+        },
         repo_url=repo_url,
+        duration_between_two_polls=60,
     )
     submitter.submit()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     test_submitter()
 ```
+Note that here we allow array-job ids to be specified in a flexible way. For example, when you specify the list of array job ids using ```job_list = [(1, 4), 6, (102, 105), 100, (8, 12), 107]```,  ```(1, 4)``` means 1, 2, 3, 4.
 
+Instead of specifying parameters in your array job submission script, you are also allowed to specify them here.
+In particular, you specify arguments required by sbatch (e.g., time, mem-per-cpu) using sbatch_params, and you can specify arguments you would like to pass to the sbatch script, using export_params.
+In this way, your array job submission script can be something common to many experiments and thus reuseable.
 `test/submit.sh` is an example of the array job submission script (For more details on slurm, please refer to the [user manual](https://slurm.schedmd.com/).
 
 ```
 #!/bin/bash
 
-#SBATCH --time=00:10:00
-#SBATCH --mem-per-cpu=1G
-#SBATCH --job-name submit.sh
 #SBATCH --output=test/output/submit_%a.txt
 #SBATCH --error=test/error/submit_%a.txt
 
 export OMP_NUM_THREADS=1
 
-module load python/3.6
+module load python/3.7
 
 echo "${python_module}" "${SLURM_ARRAY_TASK_ID}" "${config_file}"
 python -m "${python_module}" "${SLURM_ARRAY_TASK_ID}" "${config_file}"
 
 ```
+
 
 This id will be assigned by submitter automatically. The output will be written to `test/output/submit_<SLURM_ARRAY_TASK_ID>.txt`.
 In this simple example, each job outputs the `SLURM_ARRAY_TASK_ID` and the configuration filename `variables.json`.
@@ -171,50 +182,50 @@ To use sweeper, first define a json file which specifies all the combinations of
 
 ```
 {
-    "experiments":
-    [
-        {
-            "simulator": ["simulator_1"],
-            "algorithm and parameters": [
-                {
-                    "algorithm": ["algorithm_1"],
-                    "param1-2":
-                    [
-                        {
-                            "param1": ["param1_1", "param1_2"],
-                            "param2": [0.1, 0.2]
-                        },
-                        {
-                            "param1": ["param1_3", "param1_4"],
-                            "param2": [0.3, 0.4]
-                        }
-                    ],
-                    "param3": [1, 2, 3]
-                },
+	"experiments":
+	[
+	    {
+	        "simulator": ["simulator_1"],
+	        "algorithm and parameters": [
+	            {
+	                "algorithm": ["algorithm_1"],
+	                "param1-2":
+	                [
+	                    {
+	                        "param1": ["param1_1", "param1_2"],
+	                        "param2": [0.1, 0.2]
+	                    },
+	                    {
+	                        "param1": ["param1_3", "param1_4"],
+	                        "param2": [0.3, 0.4]
+	                    }
+	                ],
+	                "param3": [1, 2, 3]
+	            },
 
-                {
-                    "algorithm": ["algorithm_2"],
-                    "param1":["param1_3", "param1_4"],
-                    "param4": [true, false]
-                }
-            ]
-        },
-        {
-            "simulator": ["simulator_2"],
-            "algorithm and parameters": [
-                {
-                    "algorithm": ["algorithm_2"],
-                    "param1":["param1_3", "param1_4"],
-                    "param4": [true, false]
-                },
-                {
-                    "algorithm": ["algorithm_3"],
-                    "param5":["param5_1"],
-                    "param6": [true]
-                }
-            ]
-        }
-    ]
+	            {
+	                "algorithm": ["algorithm_2"],
+	                "param1":["param1_3", "param1_4"],
+	                "param4": [true, false]
+	            }
+	        ]
+	    },
+		{
+	        "simulator": ["simulator_2"],
+	        "algorithm and parameters": [
+	            {
+	                "algorithm": ["algorithm_2"],
+	                "param1":["param1_3", "param1_4"],
+	                "param4": [true, false]
+	            },
+		        {
+	                "algorithm": ["algorithm_3"],
+	                "param5":["param5_1"],
+	                "param6": [true]
+	            }
+	        ]
+	    }
+	]
 }
 ```
 
@@ -246,10 +257,56 @@ The `search` method takes `search_dict` and `num_runs` as input.
 generates a list which includes keywords and their values in `search_dict` and all combinations of unspecified variables.
 In addition, for each combination of variables, a corresponding list of indices corresponding to
 such combination will be generated.
+Note that if a key in `search_dict` does not appear in any variables, then that key will be ignored in the search process.
+so that users don't have to remove irrelavent items in the search_dict.
 This method can be used for post-processing. For example, after getting all experiment results.
 The user may use this method to search all results related to `search_dict`.
 
-test/test_sweeper.py is an example of using these two methods.
+`test/test_sweeper.py` is an example of using these two methods.
+```
+import os
+
+from alphaex.sweeper import Sweeper
+
+
+def test_sweeper():
+    cfg_dir = "test/cfg"
+    sweep_file_name = "variables.json"
+    num_runs = 10
+    # test Sweeper.parse
+    sweeper = Sweeper(os.path.join(cfg_dir, sweep_file_name))
+    for sweep_id in range(0, sweeper.total_combinations * num_runs):
+        rtn_dict = sweeper.parse(sweep_id)
+
+        report = (
+            "idx: %d \nrun: %d\nsimulator: %s\nalgorithm: %s\nparam1: %s\nparam2: %s \nparam3: %s\nparam4: %s\nparam5: %s\nparam6: %s\n"
+            % (
+                sweep_id,
+                rtn_dict.get("run", None),
+                rtn_dict.get("simulator", None),
+                rtn_dict.get("algorithm", None),
+                rtn_dict.get("param1", None),
+                rtn_dict.get("param2", None),
+                rtn_dict.get("param3", None),
+                rtn_dict.get("param4", None),
+                rtn_dict.get("param5", None),
+                rtn_dict.get("param6", None),
+            )
+        )
+        print(report)
+
+        # test Sweeper.search
+    print(sweeper.search(
+        {
+            "param1": "param1_3", "param4": True, "a_key_not_in_sweeper": 0, "the_other_key_not_in_sweeper": True
+        }, num_runs))
+
+
+if __name__ == "__main__":
+    test_sweeper()
+
+```
+
 
 ## Citation
 Please use the bibtex if you want to cite this repo
