@@ -3,15 +3,15 @@ AlphaEx (Alpha Experiment) is a python toolkit that helps you manage large numbe
 
 With AlphaEx, you can:
 1. Run multiple experiments on multiple computer clusters automatically.
-2. Sweep experiment variables in a simple efficient way. Just define a json file and do all sweeps with one click.
+2. Sweep over experimental variables in a simple efficient way -- just define a json file and do all sweeps with one click.
 
 The above 2 functions are implemented in 2 self-contained python scripts
 `submitter.py`, `sweeper.py`.
 
 **Warning**:
 
-Sweeper can be used in any machine with python installed. But submitter is only compatible with **slurm**.
-Make sure you have access to at least one cluster which has slurm installed. For example, I
+Sweeper can be used in any machine with python 3 installed. But submitter is only compatible with **slurm**.
+Make sure you have access to at least one cluster with slurm installed. For example, I
 have an account on compute canada, so I can use clusters including cedar, mp2, etc.
 
 To test these 2 modules, run
@@ -28,31 +28,30 @@ with you own setting. Please refer to later sections.)
 ### What is Submitter
 Think about the case when you have 1000 jobs to run and 3 computer clusters available.
 It is not easy to manually assign jobs to clusters in an effective way.
-One reason is each computer cluster has different performance.
-Some may be faster than other. The other reason is clusters may have
-different restriction on the number of jobs submitted.
+One reason is that the speed of computing varies across different cluster.
+The other reason is that clusters may have different restrictions on the number of jobs submitted.
 Submitter automatically submits all jobs for you in a simple way.
 Here is how it works.
 
-1. Synchronize project code from git repo. This step is optional. Users may choose to manually upload project code to clusters.
+1. Synchronize project code from git repo. This step is optional. You may choose to manually upload project code to clusters.
 <p><img src="./images/submitter_1.png" alt="test" width="300" height="400"></p>
 
-2. Submit jobs to each cluster. The number of jobs in each cluster will be the cluster's capacity.
+2. Submit jobs to each cluster. After submission, the number of jobs in each cluster will be the cluster's capacity, which is specified by the you.
 <p><img src="./images/submitter_2.png" alt="test" width="300" height="300"></p>
 
 3. Monitor clusters to see if there are jobs finished
 <p><img src="./images/submitter_3.png" alt="test" width="300" height="300"></p>
 
-4. If there are any, submit same number of new jobs as the finished ones until all jobs are submitted.
+4. If there are any, submit the same number of new jobs as the finished ones until all the jobs are submitted.
 <p><img src="./images/submitter_4.png" alt="test" width="300" height="300"></p>
 
-5. When all jobs are finished, copy experiment results from clusters to the server
+5. When all the jobs are finished, copy experimental results from clusters to the server
 <p><img src="./images/submitter_5.png" alt="test" width="300" height="230"></p>
 
 ### How to Use Submitter
 To use submitter, you need to first have automatic ssh access to clusters from the server,
 so that whenever you ssh to a cluster, just type in `ssh <cluster name>`
-without entering the full url, your username and your password.
+without entering the full url of the cluster, your username and your password.
 
 #### Ssh Automation
 
@@ -131,12 +130,14 @@ def test_submitter():
 if __name__ == "__main__":
     test_submitter()
 ```
-Note that here we allow array-job ids to be specified in a flexible way. For example, when you specify the list of array job ids using ```job_list = [(1, 4), 6, (102, 105), 100, (8, 12), 107]```,  ```(1, 4)``` means 1, 2, 3, 4.
+Note that when you specify array-job ids using ```job_list = [(1, 4), 6, (102, 105), 100, (8, 12), 107]```,  ```(1, 4)``` means 1, 2, 3, 4.
 
-Instead of specifying parameters in your array job submission script, you are also allowed to specify them here.
-In particular, you specify arguments required by sbatch (e.g., time, mem-per-cpu) using sbatch_params, and you can specify arguments you would like to pass to the sbatch script, using export_params.
-In this way, your array job submission script can be something common to many experiments and thus reuseable.
-`test/submit.sh` is an example of the array job submission script (For more details on slurm, please refer to the [user manual](https://slurm.schedmd.com/).
+Usually you would need to specify some parameters in your array-job submission script (e.g., `test/submit.sh` here).
+However, you are also allowed to specify them here instead of in your array-job submission script.
+In particular, you can specify parameters required by sbatch (e.g., time, mem-per-cpu) using sbatch_params,
+and you can specify other parameters you would like to pass to the sbatch script, using export_params.
+In this way, your array-job submission script can be common to many experiments and thus reuseable.
+`test/submit.sh` is an example of the array-job submission script (For more details about slurm, please refer to the [user manual](https://slurm.schedmd.com/).
 
 ```
 #!/bin/bash
@@ -153,29 +154,30 @@ python -m "${python_module}" "${SLURM_ARRAY_TASK_ID}" "${config_file}"
 
 ```
 
-
-This id will be assigned by submitter automatically. The output will be written to `test/output/submit_<SLURM_ARRAY_TASK_ID>.txt`.
 In this simple example, each job outputs the `SLURM_ARRAY_TASK_ID` and the configuration filename `variables.json`.
+`SLURM_ARRAY_TASK_ID` will be assigned by submitter automatically.
+And the output will be written to `test/output/submit_<SLURM_ARRAY_TASK_ID>.txt`.
 
-From this project root directory run `python -m test.test_submitter` in the server. Since the total capacity of mp2 and cedar are less than the total number jobs you want to run,
- submitter can not submit all jobs to these two clusters at once.
-Instead, it will submit array jobs with array indices 0-2 to cluster mp2, and submit array jobs 3-4 to cluster cedar.
+From this project root directory run `python -m test.test_submitter` in the server.
+Since the total capacity of mp2 and cedar are less than the total number jobs you want to run,
+submitter can not submit all of the jobs to these two clusters at once.
+Instead, it will submit array jobs with array indices 1-3 to cluster mp2, and submit array jobs 4,6,102 to cluster cedar.
 After that, it will monitor whether there are any submitted jobs finished.
-And if there are any, the submitter will submit same number of new jobs as the finished ones until all 10 jobs are submitted.
+And if there are any, the submitter will submit same number of new jobs as the finished ones until all of the 16 jobs are submitted.
 
-After all jobs are submitted, submitter will copy experiment results from a cluster to the server when the cluster finishes all jobs.
+After all jobs are submitted and one of the clusters finishes its all jobs, submitter will copy experimental results from that cluster to the server .
 And you can see your results in `test/output`
 
 
 ### Tips
 Since the server needs to keep running a program to monitor job status and submit new jobs.
-It may not be a good idea to use user's own laptop as the server because the laptop might not always have internet connection.
-My suggestion is to use one cluster as the server and use program like screen to make
-sure the monitor program runs in the background even if the user logout from the server.
+It may not be a good idea to use your own laptop as the server because the laptop may lose internet connection.
+Our suggestion is to use one cluster as the server and use a program like screen to make
+sure that the monitor program runs in the background even if you logout from the server.
 
 ## Sweeper
-Using sweeper, you can sweep all experiment variables using one click. These
-variables can be algorithms, simulators, parameters etc.
+Using sweeper, you can sweep all the experiment variables using one click. These
+variables can be algorithms, simulators, parameters. You can define whatever you want as variables.
 
 To use sweeper, first define a json file which specifies all the combinations of variables that you want to sweep over.
 `cfg/variables.json` is an example:
@@ -249,18 +251,16 @@ param6: True
 
 Sweeper has two useful methods:
 
-The `parse` method generates a combinations of variables, given its corresponding index `idx`.
-This method can be used for sweeping all different combinations of variables.
+The `parse` method generates a combination of variables, given its corresponding index `idx`.
+This method can be used for sweeping over all different combinations of variables.
 
-The `search` method takes `search_dict` and `num_runs` as input.
+The `search` method takes `search_dict` and `num_runs` as input, where
 `search_dict` is a dictionary including some keywords (variables) and their values. Search method
-generates a list which includes keywords and their values in `search_dict` and all combinations of unspecified variables.
-In addition, for each combination of variables, a corresponding list of indices corresponding to
-such combination will be generated.
-Note that if a key in `search_dict` does not appear in any variables, then that key will be ignored in the search process.
-so that users don't have to remove irrelavent items in the search_dict.
-This method can be used for post-processing. For example, after getting all experiment results.
-The user may use this method to search all results related to `search_dict`.
+generates a list which includes keywords and their values specified in `search_dict` and all combinations of unspecified variables.
+In addition, for each combination of variables, a list of indices corresponding to this combination will be generated.
+Note that if a key in `search_dict` is any variable, then that key will be ignored.
+As a result, you don't have to remove irrelevant items in the search_dict.
+This method can be used for post-processing. For example, after getting all experiment results, you may use this method to search all of the results related to `search_dict`.
 
 `test/test_sweeper.py` is an example of using these two methods.
 ```
