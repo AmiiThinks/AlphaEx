@@ -35,7 +35,10 @@ def test_sweeper():
         print(report)
 
         # test Sweeper.search
-    print(sweeper.search({"param1": "param1_3", "param4": True}, num_runs))
+    print(sweeper.search(
+        {
+            "param1": "param1_3", "param4": True, "a_key_not_in_sweeper": 0, "the_other_key_not_in_sweeper": True
+        }, num_runs))
 
 
 if __name__ == "__main__":

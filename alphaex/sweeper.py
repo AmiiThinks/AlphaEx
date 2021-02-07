@@ -17,7 +17,9 @@ class Sweeper(object):
         with open(config_file) as f:
             self.config_dict = json.load(f)
         self.total_combinations = 1
+        self.keys_list = []
         self.set_num_combinations()
+        self.keys_set = set(self.keys_list)
 
     def set_num_combinations(self):
         # calculating total_combinations
@@ -26,7 +28,7 @@ class Sweeper(object):
 
     def set_num_combinations_helper(self, config_dict):
         num_combinations_in_list = 1
-        for _, values in config_dict.items():
+        for key, values in config_dict.items():
             num_combinations = 0
             for value in values:
                 if type(value) is dict:
@@ -34,6 +36,7 @@ class Sweeper(object):
                     num_combinations += value["num_combinations"]
                 else:
                     num_combinations += 1
+                    self.keys_list.append(key)
             num_combinations_in_list *= num_combinations
         config_dict["num_combinations"] = num_combinations_in_list
         return num_combinations_in_list
@@ -87,14 +90,12 @@ class Sweeper(object):
 
     def search(self, search_dict, num_runs):
         """
-        For any key in self.config_dict, if search_dict also has the key,
-        use the corresponding value.
-        Otherwise enumerate all values that key could take according
-        to self.config_dict file. In addition, for each variable combination,
-        list id corresponding to each run. For example,
-        suppose self.total_combinations = 10 and
-        we want to list ids corresponding to 4 runs, then
-        the 5th variable combination
+        For any key in self.config_dict, if search_dict also has the key, use the corresponding value.
+        Otherwise enumerate all values that key could take according to self.config_dict file.
+        If search_dict contain any key that self.config_dict doesn't have all, that key is ignored.
+        In addition, for each variable combination, list id corresponding to each run.
+        For example, suppose self.total_combinations = 10 and
+        we want to list ids corresponding to 4 runs, then the 5th variable combination
         corresponds to a 4-element list of ids [5, 15, 25, 35].
 
         :param
@@ -103,7 +104,13 @@ class Sweeper(object):
         :return: the search result,
         a list of combinations of variables related to the key words
         """
-
+        
+        # find in search dict keys that don't appear in sweeper
+        delete = [key for key in search_dict if key not in self.keys_set]
+        temp_search_dict = search_dict.copy()
+        # delete keys
+        for key in delete: del temp_search_dict[key]
+            
         search_result_list = []
 
         for idx in range(self.total_combinations):
@@ -111,7 +118,7 @@ class Sweeper(object):
             temp_dict = self.parse(idx)
 
             valid_temp_dict = True
-            for key, value in search_dict.items():
+            for key, value in temp_search_dict.items():
                 if key not in temp_dict:
                     valid_temp_dict = False
                     break
@@ -128,7 +135,7 @@ class Sweeper(object):
             )
 
             for key, value in temp_dict.items():
-                if key in search_dict and search_dict[key] != value:
+                if key in temp_search_dict and temp_search_dict[key] != value:
                     search_result_list = search_result_list[:-1]
                     break
                 search_result_list[-1][key] = value

@@ -57,7 +57,7 @@ class Submitter(object):
     def __init__(
         self,
         clusters,
-        total_num_jobs,
+        job_list,
         script_path,
         export_params={},
         sbatch_params={},
@@ -77,7 +77,7 @@ class Submitter(object):
                     != cluster["exp_results_to"].__len__()
                 ):
                     print(
-                        "length of list exp_results_from must equal to length of list "
+                        "the length of list exp_results_from must equal to the length of list "
                         "exp_results_to"
                     )
                     exit(1)
@@ -131,23 +131,40 @@ class Submitter(object):
                 print(myCmd)
 
         self.clusters = clusters.copy()
-        self.starting_job_num = 0
-        self.total_num_jobs = total_num_jobs
         self.script_path = script_path
         self.duration_between_two_polls = duration_between_two_polls
         self.export_params = export_params
         self.sbatch_params = sbatch_params
-
-    def submit_jobs(self, num_jobs, cluster_name, account, project_root_dir):
+        assert(len(job_list) != 0)
+        for i in range(len(job_list)):
+            if type(job_list[i]) == int:
+                job_list[i] = (job_list[i], job_list[i])
+        self.job_list = job_list
+        # self.job_list = []
+        # for i in job_list:
+        #     if type(i) is int:
+        #         self.job_list.append(i)
+        #     elif type(i) is tuple:
+        #         assert(len(i) == 2 and type(i[0]) is int and type(i[1]) is int)
+        #         for j in range(i[0], i[1] + 1):
+        #             self.job_list.append(j)
+        #     else:
+        #         raise NotImplementedError
+        # assert len(self.job_list) == len(set(self.job_list))
+        # self.job_list.sort()
+        self.starting_job_list_index = 0 # the index of the start element in self.job_list
+        self.starting_job_num = self.job_list[self.starting_job_list_index][0]
+        
+    def submit_jobs(self, job_array_string, cluster_name, account, project_root_dir):
 
         arg_export = ",".join([f"{k}={v}" for k, v in self.export_params.items()])
-        arg_opt_sbatch = " ".join([f"--{k} {v}" for k, v in self.sbatch_params.items()])
+        arg_opt_sbatch = " ".join([f"--{k}={v}" for k, v in self.sbatch_params.items()])
 
         bash_script = (
             f"ssh {cluster_name} "
             f"'cd {project_root_dir}; "
             f"sbatch "
-            f"--array={self.starting_job_num}-{self.starting_job_num + num_jobs - 1} "
+            f"--array={job_array_string} "
             f"--account={account} "
             f"{arg_opt_sbatch} "
             f"--export={arg_export} "
@@ -160,18 +177,16 @@ class Submitter(object):
         print(bash_script)
         myCmd = os.popen(bash_script).read()
         print(myCmd)
-        print(
-            "submit jobs from %d to %d to %s"
-            % (
-                self.starting_job_num,
-                self.starting_job_num + num_jobs - 1,
-                cluster_name,
-            )
-        )
-        self.starting_job_num += num_jobs
-        if self.starting_job_num >= self.total_num_jobs:
-            return True
-        return False
+        print("submit job array " + job_array_string + " to %s." % cluster_name)
+        # print(
+        #     "submit jobs from %d to %d to %s"
+        #     % (
+        #         self.starting_job_num,
+        #         self.starting_job_num + num_jobs - 1,
+        #         cluster_name,
+        #     )
+        # )
+        return
 
     def submit(self):
         for cluster in self.clusters:
@@ -216,19 +231,63 @@ class Submitter(object):
 
                         temp_clusters.remove(cluster)
                     if temp_clusters.__len__() == 0:
-                        print("Finish all experiment results copying.\nDone\n")
+                        print("Finish all experimental results copying.\nDone\n")
                         exit(1)
                 elif num_current_jobs < cluster["capacity"]:
-                    finish_submitting = self.submit_jobs(
-                        min(
-                            cluster["capacity"] - num_current_jobs,
-                            self.total_num_jobs - self.starting_job_num,
-                        ),
+                    job_array_string = ""
+                    for job_index in range(self.starting_job_list_index, len(self.job_list)):
+                        assert(self.job_list[job_index][1] >= self.starting_job_num)
+                        if self.job_list[job_index][1] - self.starting_job_num + 1 <= cluster["capacity"] - num_current_jobs:
+                            # if the total number of jobs from starting job to the job with index indicated
+                            # by self.job_list[job_index][1] is less than or equal to the total number of jobs can be submitted
+                            job_array_string += ",%d-%d" % (self.starting_job_num, self.job_list[job_index][1])
+                            num_current_jobs += self.job_list[job_index][1] - self.starting_job_num + 1
+                            self.starting_job_list_index += 1
+                            if self.starting_job_list_index == len(self.job_list):
+                                finish_submitting = True
+                                break
+                            self.starting_job_num = self.job_list[self.starting_job_list_index][0]
+                        else:
+                            if cluster["capacity"] != num_current_jobs:
+                                # submit some jobs if there are still empty slots,
+                                # otherwise just break and try the other cluster
+                                job_array_string += ",%d-%d" % (self.starting_job_num, self.starting_job_num + cluster["capacity"] - num_current_jobs - 1)
+                                self.num_current_jobs = cluster["capacity"]
+                                self.starting_job_num += cluster["capacity"] - num_current_jobs
+                            break
+                    job_array_string = job_array_string[1:] # remove the first ','
+                    print("submit jobs " + job_array_string)
+                    if finish_submitting:
+                        print("Finish submitting all jobs")
+                    
+                    self.submit_jobs(
+                        job_array_string,
                         cluster["name"],
                         cluster["account"],
                         cluster["project_root_dir"],
                     )
-                    if finish_submitting:
-                        print("Finish submitting all jobs!")
+                        # reach_cluster_capacity = (
+                        #         self.job_list[job_index] - self.job_list[self.starting_job_index] + 1 ==
+                        #         cluster["capacity"] - num_current_jobs
+                        # )
+                        # last_job = (job_index == len(self.job_list) - 1)
+                        # if last_job or reach_cluster_capacity or \
+                        #         self.job_list[job_index + 1] != self.job_list[job_index] + 1:
+                            # self.submit_jobs(
+                            #     self.job_list[job_index] - self.job_list[self.starting_job_index] + 1,
+                            #     cluster["name"],
+                            #     cluster["account"],
+                            #     cluster["project_root_dir"],
+                            # )
+                            
+                            # num_current_jobs += job_index - self.starting_job_index + 1
+                            # if not last_job:
+                            #     self.starting_job_index = job_index + 1
+                            # else:
+                            #     finish_submitting = True
+                            #     print("Finish submitting all jobs")
+                            #     break
+                            # if reach_cluster_capacity:
+                            #     break
 
             time.sleep(self.duration_between_two_polls)
