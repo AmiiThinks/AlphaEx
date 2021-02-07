@@ -313,7 +313,7 @@ if __name__ == "__main__":
 Please use the bibtex if you want to cite this repo
 ```
 @misc{alphaex,
-  author = {Yi, Wan and Daniel, Plop},
+  author = {Wan, Yi and Plop, Daniel},
   title = {AlphaEx: A Python Toolkit for Managing a Large Number of Experiments},
   year = {2019},
   publisher = {GitHub},
