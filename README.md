@@ -25,9 +25,11 @@ with you own setting. Please refer to later sections.)
 2. numpy
 
 ## Installation
+```bash
 git clone https://github.com/AmiiThinks/AlphaEx.git
 cd AlphaEx
 pip install -e .
+```
 
 ## Submitter
 
