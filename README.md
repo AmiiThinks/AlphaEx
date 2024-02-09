@@ -24,6 +24,11 @@ with you own setting. Please refer to later sections.)
 1. python 3.7
 2. numpy
 
+## Installation
+git clone https://github.com/AmiiThinks/AlphaEx.git
+cd AlphaEx
+pip install -e .
+
 ## Submitter
 
 ### What is Submitter
